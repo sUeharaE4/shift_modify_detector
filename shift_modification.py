@@ -23,9 +23,9 @@ logger = modify_logger_cls.create_logger(__name__, INFO)
 def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像のズレを修正するスクリプト.')
     # 入力画像と出力先
-    parser.add_argument('--template_path'  , default=None, type=str,
+    parser.add_argument('--template_path', default=None, type=str,
                         help='テンプレート画像のパス.ズレ修正するための基準画像.')
-    parser.add_argument('--pair_path' , default=None, type=str,
+    parser.add_argument('--pair_path', default=None, type=str,
                         help='ズレを修正する画像のパス.')
     parser.add_argument('--output_dir', default='output/', type=str,
                         help='ズレ修正した画像の出力先.')
@@ -82,6 +82,7 @@ def check_args(args):
     # 問題なければTrueを返却する
     return True
 
+
 def __binarize(img, threshold):
     """
     画像を2値化する.アドレス参照して変換するので注意.
@@ -99,6 +100,7 @@ def __binarize(img, threshold):
     img[img < threshold] = 0
     img[img >= threshold] = 255
 
+
 def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
     base_img = util.exchange_black_white(cv2.imread(base_img_path, 0))
     pair_img = util.exchange_black_white(cv2.imread(pair_img_path, 0))
@@ -108,6 +110,7 @@ def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
     for img in [base_img, pair_img]:
         __binarize(img, threshold)
     return [base_img, pair_img]
+
 
 def expand_imgs(base_img, pair_img):
     base_img = util.expand2square(base_img, [0, 0])
@@ -121,10 +124,12 @@ def expand_imgs(base_img, pair_img):
 
     return [base_img, pair_img]
 
+
 def resize_imgs(base_img, pair_img, resize_shape):
     base_img_resize = cv2.resize(base_img, resize_shape)
     pair_img_resize = cv2.resize(pair_img, resize_shape)
     return [base_img_resize, pair_img_resize]
+
 
 if __name__ == '__main__':
     # main関数書く
@@ -178,10 +183,10 @@ if __name__ == '__main__':
         angle_est = - row_shift / (hrow) * 180
         scale_est = 1.0 - col_shift / MAG_SCALE
 
-        ## rotate slave
+        # rotate slave
         rotMat = cv2.getRotationMatrix2D(center, angle_est, 1.0)
         g_coreg = cv2.warpAffine(resize_pair_img, rotMat, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
-        ## scale slave
+        # scale slave
         g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est, interpolation=cv2.INTER_LANCZOS4)
         row_coreg_tmp = g_coreg_tmp.shape[0]
         col_coreg_tmp = g_coreg_tmp.shape[1]
@@ -193,9 +198,9 @@ if __name__ == '__main__':
         else:
             g_coreg[slice(row_coreg_tmp), slice(col_coreg_tmp)] = g_coreg_tmp
 
-        ## estimate translation & translate slave
+        # estimate translation & translate slave
         row_shift, col_shift, peak_map, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
-        ## check estimates
+        # check estimates
         logger.debug('RIPOC Results', extra=extra_args)
         logger.debug('x_shift : '      + str(col_shift), extra=extra_args)
         logger.debug('y_shift : '      + str(row_shift), extra=extra_args)
