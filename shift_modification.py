@@ -136,16 +136,14 @@ def rotate_modify(base_img, pair_img):
     回転方向のズレを修正する.
     Parameters
     ----------
+    base_img : numpy.ndarray
+        テンプレート画像
     pair_img : numpy.ndarray
         修正対象画像
-    FLP : numpy.ndarray
-        テンプレート画像を対数極座標変換した画像
-    GLP : numpy.ndarray
-        修正対称画像を対数極座標変換した画像
 
     Returns
     -------
-    rotate_pair_img : numpy.ndarray
+    modified_img : numpy.ndarray
         回転方向のズレを修正した画像.
     """
     # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
@@ -189,9 +187,38 @@ def rotate_modify(base_img, pair_img):
     tmp_height, tmp_width = expand_pair_img.shape
     center = (tmp_width / 2, tmp_height / 2)
     trans = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-    rotate_pair_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
+    modified_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
 
-    return rotate_pair_img
+    return modified_img
+
+
+def shift_modify(base_img, pair_img):
+    """
+    水平垂直方向のズレを修正する.
+    Parameters
+    ----------
+    base_img : numpy.ndarray
+        テンプレート画像
+    pair_img : numpy.ndarray
+        テンプレート画像
+
+    Returns
+    -------
+    modified_img : numpy.ndarray
+        水平垂直方向のズレを修正した画像.
+    """
+    height, width = pair_img.shape
+    shift, etc = cv2.phaseCorrelate(base_img, pair_img)
+    dx, dy = shift
+    logger.debug('POC Results', extra=extra_args)
+    logger.debug('x_shift : ' + str(dx), extra=extra_args)
+    logger.debug('y_shift : ' + str(dy), extra=extra_args)
+
+    trans = np.float32([[1, 0, -1 * dx], [0, 1, -1 * dy]])
+    modified_img = cv2.warpAffine(rotate_expand_pair_img, trans, (width, height))
+    modified_img = util.exchange_black_white(modified_img)[0:default_height, 0:default_width]
+
+    return modified_img
 
 
 if __name__ == '__main__':
@@ -232,20 +259,10 @@ if __name__ == '__main__':
         expand_base_img, expand_pair_img = expand_imgs(base_img, pair_img)
         height, width = expand_base_img.shape
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
-
+        # 回転方向の修正
         rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img)
         # 回転修正したのでPOC
-        tmp_height, tmp_width = rotate_expand_pair_img.shape
-        shift, etc = cv2.phaseCorrelate(expand_base_img, rotate_expand_pair_img)
-        dx, dy = shift
-        logger.debug('POC Results', extra=extra_args)
-        logger.debug('x_shift : ' + str(dx), extra=extra_args)
-        logger.debug('y_shift : ' + str(dy), extra=extra_args)
-
-        trans = np.float32([[1, 0, -1 * dx], [0, 1, -1 * dy]])
-
-        modified_img = cv2.warpAffine(rotate_expand_pair_img, trans, (tmp_width, tmp_height))
-        modified_img = util.exchange_black_white(modified_img)[0:default_height, 0:default_width]
+        modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
         output_img_name, output_img_ext = pair_img_path.split('/')[-1].split('.')
