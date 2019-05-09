@@ -179,8 +179,6 @@ def rotate_modify(base_img, pair_img):
     row_shift, col_shift, peak_map, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
     # check estimates
     logger.debug('RIPOC Results', extra=extra_args)
-    logger.debug('x_shift : '      + str(col_shift), extra=extra_args)
-    logger.debug('y_shift : '      + str(row_shift), extra=extra_args)
     logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
     logger.debug('scale : '        + str(scale_est), extra=extra_args)
 
@@ -221,9 +219,32 @@ def shift_modify(base_img, pair_img):
     return modified_img
 
 
-if __name__ == '__main__':
-    # main関数書く
+def write_ruled_line(img, interval=100):
+    """
+    画像に罫線を追加する.
+    Parameters
+    ----------
+    img : numpy.ndarray
+        画像
+    interval : int
+        罫線の間隔
 
+    Returns
+    -------
+    ruled_img : numpy.ndarray
+        画像に罫線を追加した画像.
+    """
+    ruled_img = img.copy()
+    for i in range(ruled_img.shape[0] // interval - 1):
+        line_pos = interval * (i + 1)
+        ruled_img[line_pos - 2:line_pos + 2, :] = (0, 255, 0)
+    for i in range(ruled_img.shape[1] // interval - 1):
+        line_pos = interval * (i + 1)
+        ruled_img[:, line_pos - 2:line_pos + 2] = (0, 255, 0)
+    return ruled_img
+
+
+if __name__ == '__main__':
     # 入力チェック(型までは見ない)
     args = parse_args()
     valid_input = check_args(args)
@@ -259,6 +280,7 @@ if __name__ == '__main__':
         expand_base_img, expand_pair_img = expand_imgs(base_img, pair_img)
         height, width = expand_base_img.shape
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
+
         # 回転方向の修正
         rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img)
         # 回転修正したのでPOC
@@ -285,12 +307,7 @@ if __name__ == '__main__':
             show_img = cv2.imread('tmp' + output_img_ext)
             os.remove('tmp' + output_img_ext)
             # 罫線追加
-            for i in range(show_img.shape[0] // 100 - 1):
-                line_pos = 100 * (i + 1)
-                show_img[line_pos - 2:line_pos + 2, :] = (0, 255, 0)
-            for i in range(show_img.shape[1] // 100 - 1):
-                line_pos = 100 * (i + 1)
-                show_img[:, line_pos - 2:line_pos + 2] = (0, 255, 0)
+            show_img = write_ruled_line(show_img)
             scale = width / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(OUTPUT_DIR, output_img_name + '_diff' + output_img_ext), show_img)
