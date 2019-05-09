@@ -25,3 +25,10 @@ class ModifyLogger:
         logger.addHandler(handler)
         loggers[name] = logger
         return logger
+
+    @classmethod
+    def setLevelUtil(cls, logger, level):
+        logger.setLevel(level)
+        for handler in logger.handlers:
+            handler.setLevel(level)
+        return logger

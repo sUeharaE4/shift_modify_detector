@@ -16,6 +16,10 @@ from logging import INFO, DEBUG
 extra_args = {}
 extra_args['tab'] = '\t'
 
+modify_logger_cls = modify_logger.ModifyLogger()
+logger = modify_logger_cls.create_logger(__name__, INFO)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像のズレを修正するスクリプト.')
     # 入力画像と出力先
@@ -132,10 +136,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if args.debug:
-        logger = modify_logger.ModifyLogger().create_logger(__name__, DEBUG)
-        # logger.setLevel(DEBUG)
-    else:
-        logger = modify_logger.ModifyLogger().create_logger(__name__, INFO)
+        logger = modify_logger_cls.setLevelUtil(logger, DEBUG)
 
     BASE_IMG   = args.template_path
     OUTPUT_DIR = args.output_dir
@@ -200,10 +201,6 @@ if __name__ == '__main__':
         logger.debug('y_shift : '      + str(row_shift), extra=extra_args)
         logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
         logger.debug('scale : '        + str(scale_est), extra=extra_args)
-        # print('x_shift = '      + str(col_shift))
-        # print('y_shift = '      + str(row_shift))
-        # print('rotate angle = ' + str(angle_est))
-        # print('scale = '        + str(scale_est))
 
         tmp_height, tmp_width = expand_pair_img.shape
         center = (tmp_width / 2, tmp_height / 2)
@@ -216,8 +213,7 @@ if __name__ == '__main__':
         logger.debug('POC Results', extra=extra_args)
         logger.debug('x_shift : ' + str(dx), extra=extra_args)
         logger.debug('y_shift : ' + str(dy), extra=extra_args)
-        # print('dx : ' + str(dx))
-        # print('dy : ' + str(dy))
+
         trans = np.float32([[1, 0, -1 * dx], [0, 1, -1 * dy]])
 
         modified_img = cv2.warpAffine(rotate_expand_pair_img, trans, (tmp_width, tmp_height))
