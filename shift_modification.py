@@ -131,6 +131,69 @@ def resize_imgs(base_img, pair_img, resize_shape):
     return [base_img_resize, pair_img_resize]
 
 
+def rotate_modify(base_img, pair_img):
+    """
+    回転方向のズレを修正する.
+    Parameters
+    ----------
+    pair_img : numpy.ndarray
+        修正対象画像
+    FLP : numpy.ndarray
+        テンプレート画像を対数極座標変換した画像
+    GLP : numpy.ndarray
+        修正対称画像を対数極座標変換した画像
+
+    Returns
+    -------
+    rotate_pair_img : numpy.ndarray
+        回転方向のズレを修正した画像.
+    """
+    # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
+    resize_base_img, resize_pair_img = resize_imgs(base_img, pair_img, RESIZE_SHAPE)
+    row, col = resize_base_img.shape[0:2]
+    hrow = int(row/2)
+    center = tuple(np.array(resize_base_img.shape) / 2)
+    logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]), extra=extra_args)
+
+    # 対数極座標変換と回転・拡大の推定
+    FLP, GLP = ripoc.logpolar_module(resize_base_img, resize_pair_img, MAG_SCALE)
+
+    row_shift, col_shift, peak_map = ripoc.fft_coreg_LP(FLP, GLP)
+    angle_est = - row_shift / (hrow) * 180
+    scale_est = 1.0 - col_shift / MAG_SCALE
+
+    # rotate slave
+    rotMat = cv2.getRotationMatrix2D(center, angle_est, 1.0)
+    g_coreg = cv2.warpAffine(resize_pair_img, rotMat, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
+    # scale slave
+    g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est, interpolation=cv2.INTER_LANCZOS4)
+    row_coreg_tmp = g_coreg_tmp.shape[0]
+    col_coreg_tmp = g_coreg_tmp.shape[1]
+    g_coreg = np.zeros((row, col))
+    if row_coreg_tmp == row:
+        g_coreg = g_coreg_tmp
+    elif row_coreg_tmp > row:
+        g_coreg = g_coreg_tmp[slice(row), slice(col)]
+    else:
+        g_coreg[slice(row_coreg_tmp), slice(col_coreg_tmp)] = g_coreg_tmp
+
+    # estimate translation & translate slave
+    row_shift, col_shift, peak_map, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
+    # check estimates
+    logger.debug('RIPOC Results', extra=extra_args)
+    logger.debug('x_shift : '      + str(col_shift), extra=extra_args)
+    logger.debug('y_shift : '      + str(row_shift), extra=extra_args)
+    logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
+    logger.debug('scale : '        + str(scale_est), extra=extra_args)
+
+    tmp_height, tmp_width = expand_pair_img.shape
+    center = (tmp_width / 2, tmp_height / 2)
+    trans = cv2.getRotationMatrix2D(center, angle_est, 1.0)
+    rotate_pair_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
+
+    return rotate_pair_img
+
+
 if __name__ == '__main__':
     # main関数書く
 
@@ -170,47 +233,7 @@ if __name__ == '__main__':
         height, width = expand_base_img.shape
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
 
-        # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
-        resize_base_img, resize_pair_img = resize_imgs(expand_base_img, expand_pair_img, RESIZE_SHAPE)
-        row,  col  = resize_base_img.shape[0:2]
-        hrow, hcol = int(row/2), int(col/2)
-        center = tuple(np.array(resize_base_img.shape) / 2)
-        logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]), extra=extra_args)
-
-        # 対数極座標変換と回転・拡大の推定
-        FLP, GLP = ripoc.logpolar_module(resize_base_img, resize_pair_img, MAG_SCALE)
-        row_shift, col_shift, peak_map = ripoc.fft_coreg_LP(FLP, GLP)
-        angle_est = - row_shift / (hrow) * 180
-        scale_est = 1.0 - col_shift / MAG_SCALE
-
-        # rotate slave
-        rotMat = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-        g_coreg = cv2.warpAffine(resize_pair_img, rotMat, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
-        # scale slave
-        g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est, interpolation=cv2.INTER_LANCZOS4)
-        row_coreg_tmp = g_coreg_tmp.shape[0]
-        col_coreg_tmp = g_coreg_tmp.shape[1]
-        g_coreg = np.zeros((row, col))
-        if row_coreg_tmp == row:
-            g_coreg = g_coreg_tmp
-        elif row_coreg_tmp > row:
-            g_coreg = g_coreg_tmp[slice(row), slice(col)]
-        else:
-            g_coreg[slice(row_coreg_tmp), slice(col_coreg_tmp)] = g_coreg_tmp
-
-        # estimate translation & translate slave
-        row_shift, col_shift, peak_map, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
-        # check estimates
-        logger.debug('RIPOC Results', extra=extra_args)
-        logger.debug('x_shift : '      + str(col_shift), extra=extra_args)
-        logger.debug('y_shift : '      + str(row_shift), extra=extra_args)
-        logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
-        logger.debug('scale : '        + str(scale_est), extra=extra_args)
-
-        tmp_height, tmp_width = expand_pair_img.shape
-        center = (tmp_width / 2, tmp_height / 2)
-        trans = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-        rotate_expand_pair_img = cv2.warpAffine(expand_pair_img, trans, (tmp_width, tmp_height))
+        rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img)
         # 回転修正したのでPOC
         tmp_height, tmp_width = rotate_expand_pair_img.shape
         shift, etc = cv2.phaseCorrelate(expand_base_img, rotate_expand_pair_img)
