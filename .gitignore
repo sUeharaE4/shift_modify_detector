@@ -1,3 +1,5 @@
 src/__pycache__
 src/logmod/__pycache__
 src/output
+tests/__pycache__
+tests/.pytest_cache
