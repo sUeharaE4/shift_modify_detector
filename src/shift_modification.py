@@ -154,15 +154,15 @@ def rotate_modify(base_img, pair_img):
     logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]), extra=extra_args)
 
     # 対数極座標変換と回転・拡大の推定
-    FLP, GLP = ripoc.logpolar_module(resize_base_img, resize_pair_img, MAG_SCALE)
+    base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img, resize_pair_img, MAG_SCALE)
 
-    row_shift, col_shift, peak_map = ripoc.fft_coreg_LP(FLP, GLP)
+    row_shift, col_shift, _ = ripoc.fft_coreg_LP(base_log_poler, pair_log_poler)
     angle_est = - row_shift / (hrow) * 180
     scale_est = 1.0 - col_shift / MAG_SCALE
 
     # rotate slave
-    rotMat = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-    g_coreg = cv2.warpAffine(resize_pair_img, rotMat, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
+    rot_matrix = cv2.getRotationMatrix2D(center, angle_est, 1.0)
+    g_coreg = cv2.warpAffine(resize_pair_img, rot_matrix, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
     # scale slave
     g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est, interpolation=cv2.INTER_LANCZOS4)
     row_coreg_tmp = g_coreg_tmp.shape[0]
@@ -176,7 +176,7 @@ def rotate_modify(base_img, pair_img):
         g_coreg[slice(row_coreg_tmp), slice(col_coreg_tmp)] = g_coreg_tmp
 
     # estimate translation & translate slave
-    row_shift, col_shift, peak_map, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
+    row_shift, col_shift, _, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
     # check estimates
     logger.debug('RIPOC Results', extra=extra_args)
     logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
@@ -185,9 +185,9 @@ def rotate_modify(base_img, pair_img):
     tmp_height, tmp_width = expand_pair_img.shape
     center = (tmp_width / 2, tmp_height / 2)
     trans = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-    modified_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
+    modify_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
 
-    return modified_img
+    return modify_img
 
 
 def shift_modify(base_img, pair_img):
@@ -206,17 +206,17 @@ def shift_modify(base_img, pair_img):
         水平垂直方向のズレを修正した画像.
     """
     height, width = pair_img.shape
-    shift, etc = cv2.phaseCorrelate(base_img, pair_img)
-    dx, dy = shift
+    shift, _ = cv2.phaseCorrelate(base_img, pair_img)
+    x_shift, y_shift = shift
     logger.debug('POC Results', extra=extra_args)
-    logger.debug('x_shift : ' + str(dx), extra=extra_args)
-    logger.debug('y_shift : ' + str(dy), extra=extra_args)
+    logger.debug('x_shift : ' + str(x_shift), extra=extra_args)
+    logger.debug('y_shift : ' + str(y_shift), extra=extra_args)
 
-    trans = np.float32([[1, 0, -1 * dx], [0, 1, -1 * dy]])
-    modified_img = cv2.warpAffine(rotate_expand_pair_img, trans, (width, height))
-    modified_img = util.exchange_black_white(modified_img)
+    trans = np.float32([[1, 0, -1 * x_shift], [0, 1, -1 * y_shift]])
+    modify_img = cv2.warpAffine(rotate_expand_pair_img, trans, (width, height))
+    modify_img = util.exchange_black_white(modify_img)
 
-    return modified_img
+    return modify_img
 
 
 def write_ruled_line(img, interval=100):
@@ -278,7 +278,6 @@ if __name__ == '__main__':
         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
 
         expand_base_img, expand_pair_img = expand_imgs(base_img, pair_img)
-        height, width = expand_base_img.shape
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
 
         # 回転方向の修正
@@ -309,6 +308,6 @@ if __name__ == '__main__':
             os.remove('tmp' + output_img_ext)
             # 罫線追加
             show_img = write_ruled_line(show_img)
-            scale = width / show_img.shape[1]
+            scale = base_img.shape[1] / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(OUTPUT_DIR, output_img_name + '_diff' + output_img_ext), show_img)
