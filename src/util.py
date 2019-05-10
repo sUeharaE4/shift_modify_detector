@@ -29,8 +29,7 @@ def expand2square(img, background_color=None):
     if height > width:
         expand_right = height - width
     expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
-                                   cv2.BORDER_CONSTANT,value=background_color
-                                  )
+                                    cv2.BORDER_CONSTANT, value=background_color)
     return expand_img
 
 
@@ -60,9 +59,9 @@ def expand_power2(img, background_color=None):
         expand_power = expand_power+1
     expand_bottom, expand_right = 2**expand_power - height, 2**expand_power - width
     expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
-                                   cv2.BORDER_CONSTANT,value=background_color
-                                  )
+                                    cv2.BORDER_CONSTANT, value=background_color)
     return expand_img
+
 
 def expand_cut2base_size(base_img, written_img, background_color=None):
     """
@@ -90,13 +89,11 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
         if diff_height < 0:
             modify_img = modify_img[:height - diff_height, :]
         if diff_width > 0:
-            modify_img = cv2.copyMakeBorder(modify_img,0,0,0,diff_width,
-                                            cv2.BORDER_CONSTANT,value=background_color
-                                           )
+            modify_img = cv2.copyMakeBorder(modify_img, 0, 0, 0, diff_width,
+                                            cv2.BORDER_CONSTANT, value=background_color)
         if diff_width > 0:
-            modify_img = cv2.copyMakeBorder(modify_img,0,diff_height,0,0,
-                                            cv2.BORDER_CONSTANT,value=background_color
-                                           )
+            modify_img = cv2.copyMakeBorder(modify_img, 0, diff_height, 0, 0,
+                                            cv2.BORDER_CONSTANT, value=background_color)
         return modify_img
 
     if base_img.shape == written_img.shape:
@@ -129,7 +126,7 @@ def exchange_black_white(img):
     return 255 - img
 
 
-def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=np.ones((1,1),np.uint8), itr=1):
+def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=np.ones((1, 1), np.uint8), itr=1):
     """
 
     Parameters
@@ -157,15 +154,15 @@ def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=
     img1 = base_img.copy()
     img2 = written_img.copy()
     if with_dilation:
-        img1 = cv2.dilate(img1,kernel,iterations=itr)
-        img2 = cv2.dilate(img2,kernel,iterations=itr)
+        img1 = cv2.dilate(img1, kernel, iterations=itr)
+        img2 = cv2.dilate(img2, kernel, iterations=itr)
     # 差分の絶対値を計算
     mask = cv2.absdiff(img1, img2)
     # 差分画像を二値化してマスク画像を算出
     mask[mask < threshold] = 0
     mask[mask >= threshold] = 255
     if with_dilation:
-        mask = cv2.erode(mask,kernel,iterations=itr)
+        mask = cv2.erode(mask, kernel, iterations=itr)
     return mask
 
 

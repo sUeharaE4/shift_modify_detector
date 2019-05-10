@@ -1,3 +1,4 @@
+from logging import INFO, DEBUG
 import argparse
 import sys
 import os
@@ -8,10 +9,7 @@ from tqdm import tqdm
 
 import util
 import ripoc
-# from shift_modification.log_mod import modify_logger
-sys.path.append('./log_mod/')
 from log_mod import modify_logger
-from logging import INFO, DEBUG
 # ログの追加フォーマット
 extra_args = {}
 extra_args['tab'] = '\t'
