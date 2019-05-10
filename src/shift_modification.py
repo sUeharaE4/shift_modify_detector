@@ -214,7 +214,7 @@ def shift_modify(base_img, pair_img):
 
     trans = np.float32([[1, 0, -1 * dx], [0, 1, -1 * dy]])
     modified_img = cv2.warpAffine(rotate_expand_pair_img, trans, (width, height))
-    modified_img = util.exchange_black_white(modified_img)[0:default_height, 0:default_width]
+    modified_img = util.exchange_black_white(modified_img)
 
     return modified_img
 
@@ -285,6 +285,7 @@ if __name__ == '__main__':
         rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img)
         # 回転修正したのでPOC
         modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
+        modified_img = modified_img[0:default_height, 0:default_width]
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
         output_img_name, output_img_ext = pair_img_path.split('/')[-1].split('.')
