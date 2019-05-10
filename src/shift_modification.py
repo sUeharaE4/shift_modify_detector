@@ -219,31 +219,6 @@ def shift_modify(base_img, pair_img):
     return modify_img
 
 
-def write_ruled_line(img, interval=100):
-    """
-    画像に罫線を追加する.
-    Parameters
-    ----------
-    img : numpy.ndarray
-        画像
-    interval : int
-        罫線の間隔
-
-    Returns
-    -------
-    ruled_img : numpy.ndarray
-        画像に罫線を追加した画像.
-    """
-    ruled_img = img.copy()
-    for i in range(ruled_img.shape[0] // interval - 1):
-        line_pos = interval * (i + 1)
-        ruled_img[line_pos - 2:line_pos + 2, :] = (0, 255, 0)
-    for i in range(ruled_img.shape[1] // interval - 1):
-        line_pos = interval * (i + 1)
-        ruled_img[:, line_pos - 2:line_pos + 2] = (0, 255, 0)
-    return ruled_img
-
-
 if __name__ == '__main__':
     # 入力チェック(型までは見ない)
     args = parse_args()
@@ -307,7 +282,7 @@ if __name__ == '__main__':
             show_img = cv2.imread('tmp' + output_img_ext)
             os.remove('tmp' + output_img_ext)
             # 罫線追加
-            show_img = write_ruled_line(show_img)
+            show_img = util.write_ruled_line(show_img)
             scale = base_img.shape[1] / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(OUTPUT_DIR, output_img_name + '_diff' + output_img_ext), show_img)

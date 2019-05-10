@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 def expand2square(img, background_color=None):
     """
     画像が正方形になるように画素を追加して拡張する.
@@ -27,10 +28,11 @@ def expand2square(img, background_color=None):
         expand_bottom = width - height
     if height > width:
         expand_right = height - width
-    expand_img= cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
+    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
                                    cv2.BORDER_CONSTANT,value=background_color
                                   )
     return expand_img
+
 
 def expand_power2(img, background_color=None):
     """
@@ -57,7 +59,7 @@ def expand_power2(img, background_color=None):
     while height > 2**expand_power:
         expand_power = expand_power+1
     expand_bottom, expand_right = 2**expand_power - height, 2**expand_power - width
-    expand_img= cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
+    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
                                    cv2.BORDER_CONSTANT,value=background_color
                                   )
     return expand_img
@@ -84,9 +86,9 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
         height, width = img.shape[:2]
         modify_img = img.copy()
         if diff_width < 0:
-            modify_img = modify_img[:,:width - diff_width]
+            modify_img = modify_img[:, :width - diff_width]
         if diff_height < 0:
-            modify_img = modify_img[:height - diff_height,:]
+            modify_img = modify_img[:height - diff_height, :]
         if diff_width > 0:
             modify_img = cv2.copyMakeBorder(modify_img,0,0,0,diff_width,
                                             cv2.BORDER_CONSTANT,value=background_color
@@ -96,18 +98,19 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
                                             cv2.BORDER_CONSTANT,value=background_color
                                            )
         return modify_img
-    
+
     if base_img.shape == written_img.shape:
         return written_img
     if background_color is None:
-        background_color = [255 for _ in range(len(img.shape))]
+        background_color = [255 for _ in range(len(base_img.shape))]
     base_height, base_width = base_img.shape[:2]
     written_height, written_width = written_img.shape[:2]
     diff_height = base_height - written_height
     diff_width = base_width - written_width
-    modify_written = modify_img(modify_written, diff_width, diff_height, background_color)
-    
+    modify_written = modify_img(written_img, diff_width, diff_height, background_color)
+
     return modify_written
+
 
 def exchange_black_white(img):
     """
@@ -124,6 +127,7 @@ def exchange_black_white(img):
 
     """
     return 255 - img
+
 
 def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=np.ones((1,1),np.uint8), itr=1):
     """
@@ -163,3 +167,28 @@ def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=
     if with_dilation:
         mask = cv2.erode(mask,kernel,iterations=itr)
     return mask
+
+
+def write_ruled_line(img, interval=100):
+    """
+    画像に罫線を追加する.
+    Parameters
+    ----------
+    img : numpy.ndarray
+        画像
+    interval : int
+        罫線の間隔
+
+    Returns
+    -------
+    ruled_img : numpy.ndarray
+        画像に罫線を追加した画像.
+    """
+    ruled_img = img.copy()
+    for i in range(ruled_img.shape[0] // interval - 1):
+        line_pos = interval * (i + 1)
+        ruled_img[line_pos - 2:line_pos + 2, :] = (0, 255, 0)
+    for i in range(ruled_img.shape[1] // interval - 1):
+        line_pos = interval * (i + 1)
+        ruled_img[:, line_pos - 2:line_pos + 2] = (0, 255, 0)
+    return ruled_img
