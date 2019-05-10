@@ -264,11 +264,14 @@ if __name__ == '__main__':
 
         output_img_name, output_img_ext = pair_img_path.split('/')[-1].split('.')
         output_img_ext = '.' + output_img_ext
-        output_img_path = os.path.join(OUTPUT_DIR, output_img_name + '_modify' + output_img_ext)
+        output_img_path = os.path.join(OUTPUT_DIR, output_img_name + output_img_ext)
         logger.debug('output_path : ' + output_img_path, extra=extra_args)
         cv2.imwrite(output_img_path, modified_img)
 
         if args.create_diff:
+            diff_dir = os.path.join(OUTPUT_DIR, 'diff')
+            if not os.path.exists(diff_dir):
+                os.mkdir(diff_dir)
             # 一度形式を変更してしまった画像をもとに戻す
             base_img, pair_img = read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
             base_img, pair_img = util.exchange_black_white(base_img), util.exchange_black_white(pair_img)
@@ -285,4 +288,4 @@ if __name__ == '__main__':
             show_img = util.write_ruled_line(show_img)
             scale = base_img.shape[1] / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
-            cv2.imwrite(os.path.join(OUTPUT_DIR, output_img_name + '_diff' + output_img_ext), show_img)
+            cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
