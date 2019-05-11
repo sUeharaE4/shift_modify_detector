@@ -19,8 +19,8 @@ logger = detect_logger_cls.create_logger(__name__, INFO)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='テンプレート画像と入力画像の差分抽出するスクリプト.' + \
-                                     '2画像の差分を取ることで記入箇所を抽出する.2画像が完全に重なることはないため、' + \
+    parser = argparse.ArgumentParser(description='テンプレート画像と入力画像の差分抽出するスクリプト.' +
+                                     '2画像の差分を取ることで記入箇所を抽出する.2画像が完全に重なることはないため、' +
                                      '若干膨張(dilation)させてから差分を取るので閾値調整が必要.')
     # 入力画像と出力先
     parser.add_argument('--template_path', default=None, type=str,
