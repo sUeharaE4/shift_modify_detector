@@ -233,12 +233,14 @@ if __name__ == '__main__':
     MAG_SCALE  = args.mag_scale
     RESIZE_SHAPE = (RESIZE_LEN, RESIZE_LEN)
 
+    DIR_SEP = os.sep
+
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
     if args.modify_multi:
         pair_img_list = os.listdir(args.modify_dir)
-        pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split('/')[-1]]))
+        pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
         pair_img_list = [os.path.join(args.modify_dir, img) for img in pair_img_list]
     else:
         pair_img_list = [args.pair_path]
@@ -260,7 +262,7 @@ if __name__ == '__main__':
         modified_img = modified_img[0:default_height, 0:default_width]
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
-        output_img_name, output_img_ext = pair_img_path.split('/')[-1].split('.')
+        output_img_name, output_img_ext = pair_img_path.split(DIR_SEP)[-1].split('.')
         output_img_ext = '.' + output_img_ext
         output_img_path = os.path.join(OUTPUT_DIR, output_img_name + output_img_ext)
         logger.debug('output_path : ' + output_img_path, extra=extra_args)
