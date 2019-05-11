@@ -41,7 +41,7 @@ def parse_args():
     # 閾値
     parser.add_argument('--threthold_BW', default=200, type=int,
                         help='白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.')
-    parser.add_argument('--drop_min_length', default=30, type=int,
+    parser.add_argument('--drop_min_length', default=45, type=int,
                         help='抽出した矩形領域のうち、小さすぎるため除去する辺の長さ(ピクセル).')
     parser.add_argument('--mask_kernel_size', default=5, type=int,
                         help='差分を取る前にdilation, erosionするkernelのサイズ.1,3,5程度.')
