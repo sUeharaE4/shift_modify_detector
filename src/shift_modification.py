@@ -25,13 +25,13 @@ def parse_args():
                         help='テンプレート画像のパス.ズレ修正するための基準画像.')
     parser.add_argument('--pair_path', default=None, type=str,
                         help='ズレを修正する画像のパス.')
-    parser.add_argument('--output_dir', default='output/', type=str,
+    parser.add_argument('--output_dir', default='modify', type=str,
                         help='ズレ修正した画像の出力先.')
     # ズレ修正でディレクトリを指定するか
     # TODO 将来的にはサブコマンドで実装してほしい
     parser.add_argument('--modify_multi', action='store_true',
                         help='ズレ修正対象を1枚の画像ではなくディレクトリにする場合に使用する.')
-    parser.add_argument('--modify_dir', default='input/', type=str,
+    parser.add_argument('--modify_dir', default='input', type=str,
                         help='ズレ修正する画像が格納されたディレクトリのパス.--template_path以外すべて修正対称にする')
     # 比較画像を作成するか
     parser.add_argument('--create_diff', action='store_true',
@@ -72,7 +72,7 @@ def check_args(args):
     if args.pair_path is None and not args.modify_multi:
         print('比較画像のパスを指定してください。またはディレクトリを指定してください.')
         print('例1：--pair_path input/other.jpg')
-        print('例2：--modify_multi --modify_dir input/')
+        print('例2：--modify_multi --modify_dir input')
         return False
     if args.modify_multi and not os.path.exists(args.modify_dir):
         print('modify_dirが存在しません')
@@ -104,7 +104,7 @@ def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
     pair_img = util.exchange_black_white(cv2.imread(pair_img_path, 0))
     # baseとpairのサイズを合わせる
     pair_img = util.expand_cut2base_size(base_img, pair_img)
-    # 2値化と形式変換
+    # 2値化
     for img in [base_img, pair_img]:
         __binarize(img, threshold)
     return [base_img, pair_img]
@@ -287,3 +287,4 @@ if __name__ == '__main__':
             scale = base_img.shape[1] / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
+        logger.debug('your inputs : ' + str(args), extra=extra_args)
