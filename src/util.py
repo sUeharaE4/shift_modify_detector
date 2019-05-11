@@ -189,3 +189,44 @@ def write_ruled_line(img, interval=100):
         line_pos = interval * (i + 1)
         ruled_img[:, line_pos - 2:line_pos + 2] = (0, 255, 0)
     return ruled_img
+
+
+def __binarize(img, threshold):
+    """
+    画像を2値化する.アドレス参照して変換するので注意.
+    Parameters
+    ----------
+    img : numpy.ndarray
+        入力画像
+    threshold : int
+        2値化する閾値. 0～255
+
+    Returns
+    -------
+
+    """
+    img[img < threshold] = 0
+    img[img >= threshold] = 255
+
+
+def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
+    base_img = exchange_black_white(cv2.imread(base_img_path, 0))
+    pair_img = exchange_black_white(cv2.imread(pair_img_path, 0))
+    # baseとpairのサイズを合わせる
+    pair_img = expand_cut2base_size(base_img, pair_img)
+    # 2値化
+    for img in [base_img, pair_img]:
+        __binarize(img, threshold)
+    return [base_img, pair_img]
+
+
+def expand_imgs(base_img, pair_img):
+    base_img = expand2square(base_img, [0, 0])
+    pair_img = expand2square(pair_img, [0, 0])
+    return [base_img, pair_img]
+
+
+def resize_imgs(base_img, pair_img, resize_shape):
+    base_img_resize = cv2.resize(base_img, resize_shape)
+    pair_img_resize = cv2.resize(pair_img, resize_shape)
+    return [base_img_resize, pair_img_resize]

@@ -1,5 +1,9 @@
+__pycache__
+.idea
+.mypy_cache
 src/__pycache__
 src/log_mod/__pycache__
-src/output
+src/modify
+src/detect_results
 tests/__pycache__
 tests/.pytest_cache
