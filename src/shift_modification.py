@@ -81,52 +81,11 @@ def check_args(args):
     return True
 
 
-def __binarize(img, threshold):
-    """
-    画像を2値化する.アドレス参照して変換するので注意.
-    Parameters
-    ----------
-    img : numpy.ndarray
-        入力画像
-    threshold : int
-        2値化する閾値. 0～255
-
-    Returns
-    -------
-
-    """
-    img[img < threshold] = 0
-    img[img >= threshold] = 255
-
-
-def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
-    base_img = util.exchange_black_white(cv2.imread(base_img_path, 0))
-    pair_img = util.exchange_black_white(cv2.imread(pair_img_path, 0))
-    # baseとpairのサイズを合わせる
-    pair_img = util.expand_cut2base_size(base_img, pair_img)
-    # 2値化
-    for img in [base_img, pair_img]:
-        __binarize(img, threshold)
-    return [base_img, pair_img]
-
-
-def expand_imgs(base_img, pair_img):
-    base_img = util.expand2square(base_img, [0, 0])
-    pair_img = util.expand2square(pair_img, [0, 0])
-
-    height, width = base_img.shape[0:2]
-    base_img = np.asarray(base_img, dtype=np.float64)
-    base_img = base_img[slice(height), slice(width)]
-    pair_img = np.asarray(pair_img, dtype=np.float64)
-    pair_img = pair_img[slice(height), slice(width)]
-
-    return [base_img, pair_img]
-
-
-def resize_imgs(base_img, pair_img, resize_shape):
-    base_img_resize = cv2.resize(base_img, resize_shape)
-    pair_img_resize = cv2.resize(pair_img, resize_shape)
-    return [base_img_resize, pair_img_resize]
+def img2float64(img):
+    height, width = img.shape[0:2]
+    float_img = np.asarray(img, dtype=np.float64)
+    float_img = float_img[slice(height), slice(width)]
+    return float_img
 
 
 def rotate_modify(base_img, pair_img):
@@ -145,7 +104,7 @@ def rotate_modify(base_img, pair_img):
         回転方向のズレを修正した画像.
     """
     # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
-    resize_base_img, resize_pair_img = resize_imgs(base_img, pair_img, RESIZE_SHAPE)
+    resize_base_img, resize_pair_img = util.resize_imgs(base_img, pair_img, RESIZE_SHAPE)
     row, col = resize_base_img.shape[0:2]
     hrow = int(row/2)
     center = tuple(np.array(resize_base_img.shape) / 2)
@@ -248,11 +207,13 @@ if __name__ == '__main__':
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-        base_img, pair_img = read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
+        base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
         default_height, default_width = base_img.shape[0:2]
         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
 
-        expand_base_img, expand_pair_img = expand_imgs(base_img, pair_img)
+        expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
+        expand_base_img = img2float64(expand_base_img)
+        expand_pair_img = img2float64(expand_pair_img)
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
 
         # 回転方向の修正
@@ -273,11 +234,11 @@ if __name__ == '__main__':
             if not os.path.exists(diff_dir):
                 os.mkdir(diff_dir)
             # 一度形式を変更してしまった画像をもとに戻す
-            base_img, pair_img = read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
+            base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
             base_img, pair_img = util.exchange_black_white(base_img), util.exchange_black_white(pair_img)
             modified_img = np.asarray(modified_img, dtype=np.uint8)
             logger.debug('hconcat 3 imgs : ' +
-                         str(base_img.shape[0:2]) + ' ' + str(base_img.shape[0:2]) + ' ' + str(modified_img.shape[0:2]),
+                         str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
                          extra=extra_args)
             show_img = cv2.hconcat([base_img, pair_img, modified_img])
             # カラー読み込み用
