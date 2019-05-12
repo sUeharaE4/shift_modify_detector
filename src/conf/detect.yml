@@ -1,0 +1,41 @@
+# 差分抽出の設定値
+
+### 動作設定
+mode: 
+  # 抽出をディレクトリ単位で実行するか 特定のファイルだけ修正したい場合はFalse
+  detect_multi: True
+  # 抽出箇所を囲った画像を生成するか
+  create_diff: True
+  # debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.
+  debug: True
+
+### 入力ファイルの設定値
+input:
+  # テンプレート画像のパス
+  template_path: 'input\template.jpg'
+  # 差分抽出画像のパス(ディレクトリ単位で修正する場合は不要)
+  pair_path: 'modify\0001.jpg'
+  # 差分抽出画像のディレクトリ. テンプレート画像は自動的に除外するので一緒に入っていてもよい.
+  detect_dir: 'modify'
+
+### 修正画像の出力先
+output: 
+  # 出力先ディレクトリ
+  output_dir: 'detect_result'
+
+### オプション
+options:
+  # 白と見なす画素値.1〜255で通常は200以上。灰色の領域があれば150等調整してください.
+  threthold_BW: 200
+  # RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.
+  mag_scale: 100
+  # 抽出した矩形領域のうち、小さすぎるため除去する辺の長さ(ピクセル)
+  drop_min_length: 45
+  # 差分を取る前にdilation, erosionするkernelのサイズ.1,3,5程度.
+  mask_kernel_size: 5
+  # 枠線等を除去するためのdilation回数.多すぎると記入部分も失う
+  mask_dilation_itr: 4
+  # 記入箇所を膨張させるkernelのサイズ.1,3程度.
+  text_kernel_size: 3
+  # 記入箇所を膨張させ、外接矩形を抽出するためのdilation回数
+  text_dilation_itr: 20
