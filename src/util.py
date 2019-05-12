@@ -221,9 +221,9 @@ def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
     return [base_img, pair_img]
 
 
-def expand_imgs(base_img, pair_img):
-    base_img = expand2square(base_img, [0, 0])
-    pair_img = expand2square(pair_img, [0, 0])
+def expand_imgs(base_img, pair_img, background_color=[0, 0]):
+    base_img = expand2square(base_img, background_color)
+    pair_img = expand2square(pair_img, background_color)
     return [base_img, pair_img]
 
 
@@ -253,7 +253,7 @@ def read_config(conf_path):
 
 def set_config(config, args):
     """
-    実行時引数で指定されたパラメタでconfigよ読み込んだオブジェクトを更新する.
+    実行時引数で指定されたパラメタでconfigを読み込んだオブジェクトを更新する.
     Parameters
     ----------
     conf_path : str
@@ -265,7 +265,7 @@ def set_config(config, args):
         読み込んだ設定値
     """
     for key, value in sorted(vars(args).items()):
-        # デフォルト値はNoneかboolなので、Noneは無視.
+        # デフォルト値はNoneなので、Noneは無視.
         if value is not None:
             for conf_type in config.keys():
                 if key in config[conf_type]:
