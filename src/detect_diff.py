@@ -35,7 +35,7 @@ def parse_args():
                         help='差分情報を記載したファイルの出力先.')
     # ズレ修正でディレクトリを指定するか
     # TODO 将来的にはサブコマンドで実装してほしい
-    parser.add_argument('--detect_multi', type=bool,
+    parser.add_argument('--detect_multi', type=strtobool,
                         help='差分抽出対象を1枚の画像ではなくディレクトリにする場合True.')
     parser.add_argument('--detect_dir', type=str,
                         help='差分抽出する画像が格納されたディレクトリのパス.--template_path以外すべて抽出対称にする.')
@@ -62,37 +62,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-
-def check_args(args):
-    """
-    実行時引数の整合性チェック.
-    Parameters
-    ----------
-    args :
-        parse_args()した実行時引数
-
-    Returns
-    -------
-    check_result : bool
-        整合性エラーが生じた時点でFalseが返却される.
-    """
-    if args.template_path is None:
-        print('テンプレート画像のパスを指定してください.例：--template_path input/template.jpg')
-        return False
-    if not isfile(args.template_path):
-        print('テンプレート画像が存在しません.パスを確認してください.')
-        return False
-    if args.pair_path is None and not args.detect_multi:
-        print('比較画像のパスを指定してください。またはディレクトリを指定してください.')
-        print('例1：--pair_path input/other.jpg')
-        print('例2：--detect_multi --detect_dir modify/')
-        return False
-    if args.detect_multi and not os.path.exists(args.detect_dir):
-        print('detect_dirが存在しません')
-        return False
-    # 問題なければTrueを返却する
-    return True
 
 
 def check_config(config):
