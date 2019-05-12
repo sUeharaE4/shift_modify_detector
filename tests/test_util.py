@@ -38,6 +38,11 @@ def test_set_config(conf_path, input_args):
         test_args.debug = input_args['mode']['debug']
     if conf_type == 'options' and conf_key == 'threthold_BW':
         test_args.threthold_BW = input_args['options']['threthold_BW']
-
-    config = util.set_config(config, test_args)
-    assert config[conf_type][conf_key] == input_args[conf_type][conf_key]
+    config_update = util.set_config(config, test_args)
+    # 上書き確認
+    assert config_update[conf_type][conf_key] == input_args[conf_type][conf_key]
+    # 未指定が更新されていないことの確認
+    for type_key in config.keys():
+        for key in config[type_key].keys():
+            if key != conf_key:
+                assert config[type_key][key] == config_update[type_key][key]
