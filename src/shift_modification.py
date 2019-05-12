@@ -74,7 +74,7 @@ def check_config(config):
         print('テンプレート画像のパスを指定してください.例：--template_path input/template.jpg')
         return False
     if not isfile(template_path):
-        print('テンプレート画像が存在しません.パスを確認してください.')
+        print('テンプレート画像が存在しません.パスを確認してください :' + template_path)
         return False
     if pair_path is None and not modify_multi:
         print('比較画像のパスを指定してください。またはディレクトリを指定してください.')
@@ -82,7 +82,7 @@ def check_config(config):
         print('例2：--modify_multi --modify_dir input')
         return False
     if modify_multi and not os.path.exists(modify_dir):
-        print('modify_dirが存在しません')
+        print('modify_dirが存在しません :' + modify_dir)
         return False
     # 問題なければTrueを返却する
     return True
