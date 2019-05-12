@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import yaml
+import math
 
 
 def expand2square(img, background_color=None):
@@ -230,3 +232,43 @@ def resize_imgs(base_img, pair_img, resize_shape):
     base_img_resize = cv2.resize(base_img, resize_shape)
     pair_img_resize = cv2.resize(pair_img, resize_shape)
     return [base_img_resize, pair_img_resize]
+
+
+def read_config(conf_path):
+    """
+    設定ファイルを読み込みdict形式で返却する.
+    Parameters
+    ----------
+    conf_path : str
+        設定ファイルのパス
+
+    Returns
+    -------
+    config : dict
+        読み込んだ設定値
+    """
+    with open(conf_path, 'r', encoding='utf-8') as yml:
+        config = yaml.load(yml, Loader=yaml.SafeLoader)
+    return config
+
+
+def set_config(config, args):
+    """
+    実行時引数で指定されたパラメタでconfigよ読み込んだオブジェクトを更新する.
+    Parameters
+    ----------
+    conf_path : str
+        設定ファイルのパス
+
+    Returns
+    -------
+    config : dict
+        読み込んだ設定値
+    """
+    for key, value in sorted(vars(args).items()):
+        # デフォルト値はNoneかboolなので、Noneは無視.
+        if value is not None:
+            for conf_type in config.keys():
+                if key in config[conf_type]:
+                    config[conf_type][key] = value
+    return config
