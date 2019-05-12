@@ -1,11 +1,13 @@
 from logging import INFO, DEBUG
 import argparse
+from distutils.util import strtobool
 import sys
 import os
 from os.path import isfile
 import numpy as np
 import cv2
 from tqdm import tqdm
+import yaml
 
 import util
 import ripoc
@@ -17,32 +19,34 @@ extra_args['tab'] = '\t'
 modify_logger_cls = modify_logger.ModifyLogger()
 logger = modify_logger_cls.create_logger(__name__, INFO)
 
+CONFIG_PATH = 'conf/shift.yml'
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像のズレを修正するスクリプト.')
     # 入力画像と出力先
-    parser.add_argument('--template_path', default=None, type=str,
+    parser.add_argument('--template_path', type=str,
                         help='テンプレート画像のパス.ズレ修正するための基準画像.')
-    parser.add_argument('--pair_path', default=None, type=str,
+    parser.add_argument('--pair_path', type=str,
                         help='ズレを修正する画像のパス.')
-    parser.add_argument('--output_dir', default='modify', type=str,
+    parser.add_argument('--output_dir', type=str,
                         help='ズレ修正した画像の出力先.')
     # ズレ修正でディレクトリを指定するか
     # TODO 将来的にはサブコマンドで実装してほしい
-    parser.add_argument('--modify_multi', action='store_true',
-                        help='ズレ修正対象を1枚の画像ではなくディレクトリにする場合に使用する.')
-    parser.add_argument('--modify_dir', default='input', type=str,
+    parser.add_argument('--modify_multi', type=strtobool,
+                        help='ズレ修正対象を1枚の画像ではなくディレクトリにする場合True.')
+    parser.add_argument('--modify_dir', type=str,
                         help='ズレ修正する画像が格納されたディレクトリのパス.--template_path以外すべて修正対称にする')
     # 比較画像を作成するか
-    parser.add_argument('--create_diff', action='store_true',
-                        help='ズレ修正前後とテンプレート画像を並べた比較画像を生成する場合に使用する.')
+    parser.add_argument('--create_diff', type=strtobool,
+                        help='ズレ修正前後とテンプレート画像を並べた比較画像を生成する場合True.')
     # 閾値
-    parser.add_argument('--threthold_BW', default=200, type=int,
+    parser.add_argument('--threthold_BW', type=int,
                         help='白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.')
-    parser.add_argument('--mag_scale', default=100, type=int,
+    parser.add_argument('--mag_scale', type=int,
                         help='RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.')
     # Debug log を出力するか
-    parser.add_argument('--debug', action='store_true',
+    parser.add_argument('--debug', type=strtobool,
                         help='debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.')
 
     args = parser.parse_args()
@@ -50,31 +54,35 @@ def parse_args():
     return args
 
 
-def check_args(args):
+def check_config(config):
     """
-    実行時引数の整合性チェック.
+    設定値の整合性チェック.
     Parameters
     ----------
-    args :
-        parse_args()した実行時引数
+    config :
+        設定ファイルと実行時引数を読み込んだdict
 
     Returns
     -------
     check_result : bool
         整合性エラーが生じた時点でFalseが返却される.
     """
-    if args.template_path is None:
+    template_path = config['input']['template_path']
+    pair_path = config['input']['pair_path']
+    modify_dir = config['input']['modify_dir']
+    modify_multi = config['mode']['modify_multi']
+    if template_path is None:
         print('テンプレート画像のパスを指定してください.例：--template_path input/template.jpg')
         return False
-    if not isfile(args.template_path):
+    if not isfile(template_path):
         print('テンプレート画像が存在しません.パスを確認してください.')
         return False
-    if args.pair_path is None and not args.modify_multi:
+    if pair_path is None and not modify_multi:
         print('比較画像のパスを指定してください。またはディレクトリを指定してください.')
         print('例1：--pair_path input/other.jpg')
         print('例2：--modify_multi --modify_dir input')
         return False
-    if args.modify_multi and not os.path.exists(args.modify_dir):
+    if modify_multi and not os.path.exists(modify_dir):
         print('modify_dirが存在しません')
         return False
     # 問題なければTrueを返却する
@@ -179,35 +187,43 @@ def shift_modify(base_img, pair_img):
 if __name__ == '__main__':
     # 入力チェック(型までは見ない)
     args = parse_args()
-    valid_input = check_args(args)
+    config = util.read_config(CONFIG_PATH)
+    config = util.set_config(config, args)
+    valid_input = check_config(config)
     if not valid_input:
         sys.exit(1)
 
-    if args.debug:
+    if config['mode']['debug']:
         logger = modify_logger_cls.setLevelUtil(logger, DEBUG)
 
-    BASE_IMG   = args.template_path
-    OUTPUT_DIR = args.output_dir
-    RESIZE_LEN = 512
-    MAG_SCALE  = args.mag_scale
+    BASE_IMG     = config['input']['template_path']
+    OUTPUT_DIR   = config['output']['output_dir']
+    RESIZE_LEN   = 512
+    MAG_SCALE    = config['options']['mag_scale']
     RESIZE_SHAPE = (RESIZE_LEN, RESIZE_LEN)
 
     DIR_SEP = os.sep
 
+    MODIFY_MULTI = config['mode']['modify_multi']
+    MODIFY_DIR   = config['input']['modify_dir']
+    THRETHOLD_BW = config['options']['threthold_BW']
+    PAIR_PATH    = config['input']['pair_path']
+    CREATE_DIFF  = config['mode']['create_diff']
+
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
-    if args.modify_multi:
-        pair_img_list = os.listdir(args.modify_dir)
+    if MODIFY_MULTI:
+        pair_img_list = os.listdir(MODIFY_DIR)
         pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
-        pair_img_list = [os.path.join(args.modify_dir, img) for img in pair_img_list]
+        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_list]
     else:
-        pair_img_list = [args.pair_path]
+        pair_img_list = [PAIR_PATH]
     logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-        base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
+        base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
         default_height, default_width = base_img.shape[0:2]
         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
 
@@ -229,12 +245,12 @@ if __name__ == '__main__':
         logger.debug('output_path : ' + output_img_path, extra=extra_args)
         cv2.imwrite(output_img_path, modified_img)
 
-        if args.create_diff:
+        if CREATE_DIFF:
             diff_dir = os.path.join(OUTPUT_DIR, 'diff')
             if not os.path.exists(diff_dir):
                 os.mkdir(diff_dir)
             # 一度形式を変更してしまった画像をもとに戻す
-            base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, args.threthold_BW)
+            base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
             base_img, pair_img = util.exchange_black_white(base_img), util.exchange_black_white(pair_img)
             modified_img = np.asarray(modified_img, dtype=np.uint8)
             logger.debug('hconcat 3 imgs : ' +
@@ -250,4 +266,4 @@ if __name__ == '__main__':
             scale = base_img.shape[1] / show_img.shape[1]
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
-        logger.debug('your inputs : ' + str(args), extra=extra_args)
+    logger.debug('your inputs : ' + str(config), extra=extra_args)
