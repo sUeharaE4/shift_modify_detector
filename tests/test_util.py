@@ -1,10 +1,6 @@
 import numpy as np
-import cv2
-import os
-import sys
 import yaml
 import argparse
-
 import pytest
 
 import util
