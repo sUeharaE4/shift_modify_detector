@@ -8,7 +8,6 @@ import numpy as np
 import cv2
 from tqdm import tqdm
 import csv
-import yaml
 
 import util
 from log_mod import modify_logger
@@ -104,8 +103,6 @@ if __name__ == '__main__':
     args = parse_args()
     config = util.read_config(CONFIG_PATH)
     config = util.set_config(config, args)
-    print(config)
-    print(args)
     valid_input = check_config(config)
     if not valid_input:
         sys.exit(1)

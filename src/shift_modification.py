@@ -7,7 +7,6 @@ from os.path import isfile
 import numpy as np
 import cv2
 from tqdm import tqdm
-import yaml
 
 import util
 import ripoc

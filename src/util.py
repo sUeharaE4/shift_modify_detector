@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import yaml
-import math
 
 
 def expand2square(img, background_color=None):
