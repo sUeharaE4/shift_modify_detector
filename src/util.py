@@ -256,13 +256,15 @@ def set_config(config, args):
     実行時引数で指定されたパラメタでconfigを読み込んだオブジェクトを更新する.
     Parameters
     ----------
-    conf_path : str
-        設定ファイルのパス
+    config : dict
+        設定ファイルを読み込んだオブジェクト
+    args : Namespace
+        実行時引数をparseした結果
 
     Returns
     -------
     config : dict
-        読み込んだ設定値
+        更新した設定値
     """
     for key, value in sorted(vars(args).items()):
         # デフォルト値はNoneなので、Noneは無視.
