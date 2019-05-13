@@ -188,6 +188,7 @@ if __name__ == '__main__':
     args = parse_args()
     config = util.read_config(CONFIG_PATH)
     config = util.set_config(config, args)
+    config = util.modify_path_in_config(config)
     valid_input = check_config(config)
     if not valid_input:
         sys.exit(1)

@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 import pytest
+import os
 
 import util
 
@@ -46,3 +47,20 @@ def test_set_config(conf_path, input_args):
         for key in config[type_key].keys():
             if key != conf_key:
                 assert config[type_key][key] == config_update[type_key][key]
+
+
+@pytest.mark.parametrize('conf_path', [
+    ('conf/detect_default.yml'),
+    ('conf/shift_default.yml'),
+    ('conf/detect_path_posix.yml'),
+])
+def test_modify_path_in_config(conf_path):
+    conf_type_has_path = ['input', 'output']
+    sep_change_dict = {'/': '\\', '\\': '/'}
+    sep_dir = os.sep
+    other_sep_dir = sep_change_dict[sep_dir]
+    config = util.read_config(conf_path)
+    config_update = util.modify_path_in_config(config)
+    for conf_type in conf_type_has_path:
+        for key in config_update[conf_type].keys():
+            assert config_update[conf_type][key].count(other_sep_dir) == 0

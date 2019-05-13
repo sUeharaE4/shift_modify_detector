@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import yaml
+import os
 
 
 def expand2square(img, background_color=None):
@@ -272,4 +273,27 @@ def set_config(config, args):
             for conf_type in config.keys():
                 if key in config[conf_type]:
                     config[conf_type][key] = value
+    return config
+
+
+def modify_path_in_config(config):
+    """
+    configのパスをOSに合わせて変更する.
+    Parameters
+    ----------
+    config : dict
+        設定ファイルを読み込んだオブジェクト
+
+    Returns
+    -------
+    config : dict
+        更新した設定値
+    """
+    conf_type_has_path = ['input', 'output']
+    sep_change_dict = {'/': '\\', '\\': '/'}
+    sep_dir = os.sep
+    other_sep_dir = sep_change_dict[sep_dir]
+    for conf_type in conf_type_has_path:
+        for key in config[conf_type].keys():
+            config[conf_type][key] = config[conf_type][key].replace(other_sep_dir, sep_dir)
     return config
