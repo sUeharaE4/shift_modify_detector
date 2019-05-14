@@ -7,3 +7,5 @@ src/modify
 src/detect_result
 tests/__pycache__
 tests/.pytest_cache
+tests/.coverage
+tests/htmlcov
