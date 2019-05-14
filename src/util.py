@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import yaml
 import os
+import pandas as pd
 
 
 def expand2square(img, background_color=None):
@@ -297,3 +298,21 @@ def modify_path_in_config(config):
         for key in config[conf_type].keys():
             config[conf_type][key] = config[conf_type][key].replace(other_sep_dir, sep_dir)
     return config
+
+
+def csv2json(csv_path):
+    """
+    CSVの矩形座標情報をJSONに変換する.
+    Parameters
+    ----------
+    csv_path : str
+        CSVファイルのパス
+
+    Returns
+    -------
+    rect_json : dict
+        矩形情報を格納したJSON
+    """
+    df = pd.read_csv(csv_path)
+    rect_json = {'rectangles': df.to_dict(orient='records')}
+    return rect_json

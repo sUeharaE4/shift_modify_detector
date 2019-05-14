@@ -2,6 +2,7 @@ import numpy as np
 import argparse
 import pytest
 import os
+import json
 
 import util
 
@@ -64,3 +65,13 @@ def test_modify_path_in_config(conf_path):
     for conf_type in conf_type_has_path:
         for key in config_update[conf_type].keys():
             assert config_update[conf_type][key].count(other_sep_dir) == 0
+
+
+@pytest.mark.parametrize('input_csv, expect_json', [
+    ('csv2json/01.csv', 'csv2json/01.json'),
+])
+def test_csv2json(input_csv, expect_json):
+    with open(expect_json, 'r', encoding='utf-8') as j:
+        expect = json.load(j)
+    json_csv = util.csv2json(input_csv)
+    assert json_csv == expect
