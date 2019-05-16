@@ -13,6 +13,7 @@ jobs:
             pip install pytest
             pip install pytest-cov
             pip install -r requirements.txt
+            export PYTHONPATH=${HOME}/shift_modify_detector/src
       - run:
           name: run test
           command: |
