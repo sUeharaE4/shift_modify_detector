@@ -16,7 +16,7 @@ jobs:
       - run:
           name: run test
           command: |
-            . venv/bin/activate
+            . ../venv/bin/activate
             pytest -v -l
           working_directory: tests/
       - store-test-results:
@@ -24,6 +24,6 @@ jobs:
       - run:
           name: run test-cov
           command: |
-            . venv/bin/activate
+            . ../venv/bin/activate
             pytest --cov=src
           working_directory: tests/
