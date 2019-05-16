@@ -66,6 +66,7 @@ def parse_args():
 def check_config(config):
     """
     設定値の整合性チェック.
+
     Parameters
     ----------
     config :

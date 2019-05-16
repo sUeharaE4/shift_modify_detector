@@ -9,6 +9,7 @@ import base64
 def expand2square(img, background_color=None):
     """
     画像が正方形になるように画素を追加して拡張する.
+
     Parameters
     ----------
     img : numpy.ndarray
@@ -40,6 +41,7 @@ def expand2square(img, background_color=None):
 def expand_power2(img, background_color=None):
     """
     正方形画像の辺が2の累乗になるように画素を追加して拡張する.
+
     Parameters
     ----------
     img : numpy.ndarray
@@ -71,6 +73,7 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
     """
     base_imgに合わせて画像をパディングか切り出しする
     いずれも右側、下側に追加or削除を実施する.
+
     Parameters
     ----------
     base_img : numpy.ndarray
@@ -116,6 +119,7 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
 def exchange_black_white(img):
     """
     画像の白黒を反転する.
+
     Parameters
     ----------
     img : numpy.ndarray
@@ -132,6 +136,7 @@ def exchange_black_white(img):
 
 def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=np.ones((1, 1), np.uint8), itr=1):
     """
+    2枚の画像から差分を抽出するためのマスクを計算する.
 
     Parameters
     ----------
@@ -173,6 +178,7 @@ def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=
 def write_ruled_line(img, interval=100):
     """
     画像に罫線を追加する.
+
     Parameters
     ----------
     img : numpy.ndarray
@@ -198,6 +204,7 @@ def write_ruled_line(img, interval=100):
 def __binarize(img, threshold):
     """
     画像を2値化する.アドレス参照して変換するので注意.
+
     Parameters
     ----------
     img : numpy.ndarray
@@ -239,6 +246,7 @@ def resize_imgs(base_img, pair_img, resize_shape):
 def read_config(conf_path):
     """
     設定ファイルを読み込みdict形式で返却する.
+
     Parameters
     ----------
     conf_path : str
@@ -257,6 +265,7 @@ def read_config(conf_path):
 def set_config(config, args):
     """
     実行時引数で指定されたパラメタでconfigを読み込んだオブジェクトを更新する.
+
     Parameters
     ----------
     config : dict
@@ -281,6 +290,7 @@ def set_config(config, args):
 def modify_path_in_config(config):
     """
     configのパスをOSに合わせて変更する.
+
     Parameters
     ----------
     config : dict
@@ -304,6 +314,7 @@ def modify_path_in_config(config):
 def csv2json(csv_path):
     """
     CSVの矩形座標情報をJSONに変換する.
+
     Parameters
     ----------
     csv_path : str
@@ -322,6 +333,7 @@ def csv2json(csv_path):
 def create_text_detect_request(rectangle_json, img):
     """
     TesseractのTextDetection用jsonを生成する.
+
     Parameters
     ----------
     rectangle_json : dict

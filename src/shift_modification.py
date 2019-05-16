@@ -56,6 +56,7 @@ def parse_args():
 def check_config(config):
     """
     設定値の整合性チェック.
+
     Parameters
     ----------
     config :
@@ -98,6 +99,7 @@ def img2float64(img):
 def rotate_modify(base_img, pair_img):
     """
     回転方向のズレを修正する.
+
     Parameters
     ----------
     base_img : numpy.ndarray
@@ -157,6 +159,7 @@ def rotate_modify(base_img, pair_img):
 def shift_modify(base_img, pair_img):
     """
     水平垂直方向のズレを修正する.
+
     Parameters
     ----------
     base_img : numpy.ndarray

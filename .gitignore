@@ -9,3 +9,5 @@ tests/__pycache__
 tests/.pytest_cache
 tests/.coverage
 tests/htmlcov
+docs/
+!docs/html
