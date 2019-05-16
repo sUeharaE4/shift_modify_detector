@@ -13,10 +13,10 @@ jobs:
             pip install pytest
             pip install pytest-cov
             pip install -r requirements.txt
-            export PYTHONPATH=${PWD}/src
       - run:
           name: run test
           command: |
+            export PYTHONPATH=${PWD}/src
             . ../venv/bin/activate
             pytest -v -l
           working_directory: tests/
@@ -25,6 +25,7 @@ jobs:
       - run:
           name: run test-cov
           command: |
+            export PYTHONPATH=${PWD}/src
             . ../venv/bin/activate
             pytest --cov=src
           working_directory: tests/
