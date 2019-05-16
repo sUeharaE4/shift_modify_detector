@@ -3,6 +3,7 @@ import cv2
 import yaml
 import os
 import pandas as pd
+import base64
 
 
 def expand2square(img, background_color=None):
@@ -316,3 +317,24 @@ def csv2json(csv_path):
     df = pd.read_csv(csv_path)
     rect_json = {'rectangles': df.to_dict(orient='records')}
     return rect_json
+
+
+def create_text_detect_request(rectangle_json, img):
+    """
+    TesseractのTextDetection用jsonを生成する.
+    Parameters
+    ----------
+    rectangle_json : dict
+        座標情報を格納したJSON
+    img : numpy.ndarray
+        画像
+
+    Returns
+    -------
+    api_json : dict
+        api request のJSON
+    """
+    base64_text = base64.b64encode(img).decode('utf-8')
+    api_json = {'image': base64_text}
+    api_json.update(rectangle_json)
+    return api_json

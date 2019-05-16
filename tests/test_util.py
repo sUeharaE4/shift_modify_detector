@@ -3,6 +3,7 @@ import argparse
 import pytest
 import os
 import json
+import cv2
 
 import util
 
@@ -75,3 +76,15 @@ def test_csv2json(input_csv, expect_json):
         expect = json.load(j)
     json_csv = util.csv2json(input_csv)
     assert json_csv == expect
+
+
+@pytest.mark.parametrize('input_csv, input_img, expect_json', [
+    ('csv2json/01.csv', 'images/mnist_7.png', 'api_json/text_detect_req_01.json'),
+])
+def test_create_text_detect_request(input_csv, input_img, expect_json):
+    rectangle_json = util.csv2json(input_csv)
+    with open(expect_json, 'r', encoding='utf-8') as j:
+        expect = json.load(j)
+    img = cv2.imread(input_img)
+    api_json = util.create_text_detect_request(rectangle_json, img)
+    assert api_json == expect
