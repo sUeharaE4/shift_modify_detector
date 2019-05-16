@@ -325,15 +325,17 @@ def create_text_detect_request(rectangle_json, img):
     Parameters
     ----------
     rectangle_json : dict
-        座標情報を格納したJSON
+        座標情報を格納したJSON.
     img : numpy.ndarray
-        画像
+        画像.
 
     Returns
     -------
     api_json : dict
-        api request のJSON
+        api request のJSON. 画像の追加と座標情報にIDが追加されている.
     """
+    for uid, rect in enumerate(rectangle_json['rectangles']):
+        rect['uid'] = uid
     base64_text = base64.b64encode(img).decode('utf-8')
     api_json = {'image': base64_text}
     api_json.update(rectangle_json)
