@@ -1,0 +1,27 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.3
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install pytest
+            pip install pytest-cov
+            pip install -r ../requirements.txt
+      - run:
+          name: run test
+          command: |
+            . venv/bin/activate
+            pytest --junitxml=test-reports/junit.xml
+      - store-test-results:
+          path: test-reports
+      - run:
+          name: run test-cov
+          command: |
+            . venv/bin/activate
+            pytest --cov=src
