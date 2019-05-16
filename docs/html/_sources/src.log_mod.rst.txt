@@ -1,0 +1,22 @@
+src.log\_mod package
+====================
+
+Submodules
+----------
+
+src.log\_mod.modify\_logger module
+----------------------------------
+
+.. automodule:: src.log_mod.modify_logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: src.log_mod
+    :members:
+    :undoc-members:
+    :show-inheritance:

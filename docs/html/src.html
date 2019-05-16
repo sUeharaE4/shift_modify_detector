@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>src package &mdash; shift_mod_detector  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> shift_mod_detector
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">src package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-src.detect_diff">src.detect_diff module</a></li>
+<li><a class="reference internal" href="#module-src.ripoc">src.ripoc module</a></li>
+<li><a class="reference internal" href="#module-src.shift_modification">src.shift_modification module</a></li>
+<li><a class="reference internal" href="#module-src.util">src.util module</a></li>
+<li><a class="reference internal" href="#module-src">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">shift_mod_detector</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>src package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/src.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="src-package">
+<h1>src package<a class="headerlink" href="#src-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src.log_mod.html">src.log_mod package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.log_mod.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.log_mod.html#module-src.log_mod.modify_logger">src.log_mod.modify_logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.log_mod.html#module-src.log_mod">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-src.detect_diff">
+<span id="src-detect-diff-module"></span><h2>src.detect_diff module<a class="headerlink" href="#module-src.detect_diff" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.detect_diff.check_config">
+<code class="descclassname">src.detect_diff.</code><code class="descname">check_config</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/detect_diff.html#check_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.detect_diff.check_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>設定値の整合性チェック.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – 設定ファイルと実行時引数を読み込んだdict</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>check_result</strong> – 整合性エラーが生じた時点でFalseが返却される.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.detect_diff.parse_args">
+<code class="descclassname">src.detect_diff.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/detect_diff.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.detect_diff.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src.ripoc">
+<span id="src-ripoc-module"></span><h2>src.ripoc module<a class="headerlink" href="#module-src.ripoc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.ripoc.FTpad">
+<code class="descclassname">src.ripoc.</code><code class="descname">FTpad</code><span class="sig-paren">(</span><em>imFT</em>, <em>outsize</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#FTpad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.FTpad" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.ripoc.dftregistration">
+<code class="descclassname">src.ripoc.</code><code class="descname">dftregistration</code><span class="sig-paren">(</span><em>buf1ft</em>, <em>buf2ft</em>, <em>usfac</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#dftregistration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.dftregistration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.ripoc.dftups">
+<code class="descclassname">src.ripoc.</code><code class="descname">dftups</code><span class="sig-paren">(</span><em>in_arr</em>, <em>nor</em>, <em>noc</em>, <em>usfac</em>, <em>roff</em>, <em>coff</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#dftups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.dftups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.ripoc.fft_coreg_LP">
+<code class="descclassname">src.ripoc.</code><code class="descname">fft_coreg_LP</code><span class="sig-paren">(</span><em>master</em>, <em>slave</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#fft_coreg_LP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.fft_coreg_LP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.ripoc.fft_coreg_trans">
+<code class="descclassname">src.ripoc.</code><code class="descname">fft_coreg_trans</code><span class="sig-paren">(</span><em>master</em>, <em>slave</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#fft_coreg_trans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.fft_coreg_trans" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.ripoc.logpolar_module">
+<code class="descclassname">src.ripoc.</code><code class="descname">logpolar_module</code><span class="sig-paren">(</span><em>f</em>, <em>g</em>, <em>mag_scale</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/ripoc.html#logpolar_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.ripoc.logpolar_module" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src.shift_modification">
+<span id="src-shift-modification-module"></span><h2>src.shift_modification module<a class="headerlink" href="#module-src.shift_modification" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.shift_modification.check_config">
+<code class="descclassname">src.shift_modification.</code><code class="descname">check_config</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#check_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.check_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>設定値の整合性チェック.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – 設定ファイルと実行時引数を読み込んだdict</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>check_result</strong> – 整合性エラーが生じた時点でFalseが返却される.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.shift_modification.img2float64">
+<code class="descclassname">src.shift_modification.</code><code class="descname">img2float64</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#img2float64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.img2float64" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.shift_modification.parse_args">
+<code class="descclassname">src.shift_modification.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.shift_modification.rotate_modify">
+<code class="descclassname">src.shift_modification.</code><code class="descname">rotate_modify</code><span class="sig-paren">(</span><em>base_img</em>, <em>pair_img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#rotate_modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.rotate_modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>回転方向のズレを修正する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
+<li><p><strong>pair_img</strong> (<em>numpy.ndarray</em>) – 修正対象画像</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>modified_img</strong> – 回転方向のズレを修正した画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.shift_modification.shift_modify">
+<code class="descclassname">src.shift_modification.</code><code class="descname">shift_modify</code><span class="sig-paren">(</span><em>base_img</em>, <em>pair_img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#shift_modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.shift_modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>水平垂直方向のズレを修正する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
+<li><p><strong>pair_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>modified_img</strong> – 水平垂直方向のズレを修正した画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.util">
+<span id="src-util-module"></span><h2>src.util module<a class="headerlink" href="#module-src.util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.util.calc_mask">
+<code class="descclassname">src.util.</code><code class="descname">calc_mask</code><span class="sig-paren">(</span><em>base_img, written_img, threshold=230, with_dilation=False, kernel=array([[1]], dtype=uint8), itr=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#calc_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.calc_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>2枚の画像から差分を抽出するためのマスクを計算する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_img1</strong> (<em>numpy.ndarray</em>) – 基準となる画像.</p></li>
+<li><p><strong>written_img</strong> (<em>numpy.ndarray</em>) – 差分を抽出したい画像.</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – 差分を2値化する際の閾値. 0～255.</p></li>
+<li><p><strong>with_dilation</strong> (<em>bool</em>) – 差分を抽出する時にdilationしておくか. 画像にズレがある場合はTrue</p></li>
+<li><p><strong>kernel</strong> (<em>numpy.ndarray</em>) – dilationする際のkernel. (N,N)行列.</p></li>
+<li><p><strong>itr</strong> (<em>int</em>) – dilationする際のiteration回数.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mask</strong> – 差分を抽出する際のマスク</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.create_text_detect_request">
+<code class="descclassname">src.util.</code><code class="descname">create_text_detect_request</code><span class="sig-paren">(</span><em>rectangle_json</em>, <em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#create_text_detect_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.create_text_detect_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>TesseractのTextDetection用jsonを生成する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rectangle_json</strong> (<em>dict</em>) – 座標情報を格納したJSON.</p></li>
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 画像.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>api_json</strong> – api request のJSON. 画像の追加と座標情報にIDが追加されている.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.csv2json">
+<code class="descclassname">src.util.</code><code class="descname">csv2json</code><span class="sig-paren">(</span><em>csv_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#csv2json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.csv2json" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSVの矩形座標情報をJSONに変換する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>csv_path</strong> (<em>str</em>) – CSVファイルのパス</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>rect_json</strong> – 矩形情報を格納したJSON</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.exchange_black_white">
+<code class="descclassname">src.util.</code><code class="descname">exchange_black_white</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#exchange_black_white"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.exchange_black_white" title="Permalink to this definition">¶</a></dt>
+<dd><p>画像の白黒を反転する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>numpy.ndarray</em>) – 白黒反転したい画像.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>白黒反転した画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.expand2square">
+<code class="descclassname">src.util.</code><code class="descname">expand2square</code><span class="sig-paren">(</span><em>img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand2square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand2square" title="Permalink to this definition">¶</a></dt>
+<dd><p>画像が正方形になるように画素を追加して拡張する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 正方形にしたい画像.</p></li>
+<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>expand_img</strong> – 正方形にした画像</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.expand_cut2base_size">
+<code class="descclassname">src.util.</code><code class="descname">expand_cut2base_size</code><span class="sig-paren">(</span><em>base_img</em>, <em>written_img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_cut2base_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_cut2base_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>base_imgに合わせて画像をパディングか切り出しする
+いずれも右側、下側に追加or削除を実施する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – サイズ変更する基準サイズを与える画像.</p></li>
+<li><p><strong>written_img</strong> (<em>numpy.ndarray</em>) – サイズ変更される画像.</p></li>
+<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>modify_written</strong> – base_imgにサイズを合わせられた入力画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.expand_imgs">
+<code class="descclassname">src.util.</code><code class="descname">expand_imgs</code><span class="sig-paren">(</span><em>base_img, pair_img, background_color=[0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_imgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_imgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.util.expand_power2">
+<code class="descclassname">src.util.</code><code class="descname">expand_power2</code><span class="sig-paren">(</span><em>img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_power2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_power2" title="Permalink to this definition">¶</a></dt>
+<dd><p>正方形画像の辺が2の累乗になるように画素を追加して拡張する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 拡張したい画像.</p></li>
+<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>expand_img</strong> – 1辺の長さが2の累乗にした画像</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.modify_path_in_config">
+<code class="descclassname">src.util.</code><code class="descname">modify_path_in_config</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#modify_path_in_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.modify_path_in_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>configのパスをOSに合わせて変更する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>dict</em>) – 設定ファイルを読み込んだオブジェクト</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>config</strong> – 更新した設定値</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.read_base_pair_imgs">
+<code class="descclassname">src.util.</code><code class="descname">read_base_pair_imgs</code><span class="sig-paren">(</span><em>base_img_path</em>, <em>pair_img_path</em>, <em>threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#read_base_pair_imgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.read_base_pair_imgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.util.read_config">
+<code class="descclassname">src.util.</code><code class="descname">read_config</code><span class="sig-paren">(</span><em>conf_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.read_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>設定ファイルを読み込みdict形式で返却する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conf_path</strong> (<em>str</em>) – 設定ファイルのパス</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>config</strong> – 読み込んだ設定値</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.resize_imgs">
+<code class="descclassname">src.util.</code><code class="descname">resize_imgs</code><span class="sig-paren">(</span><em>base_img</em>, <em>pair_img</em>, <em>resize_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#resize_imgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.resize_imgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="src.util.set_config">
+<code class="descclassname">src.util.</code><code class="descname">set_config</code><span class="sig-paren">(</span><em>config</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#set_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.set_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>実行時引数で指定されたパラメタでconfigを読み込んだオブジェクトを更新する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – 設定ファイルを読み込んだオブジェクト</p></li>
+<li><p><strong>args</strong> (<em>Namespace</em>) – 実行時引数をparseした結果</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>config</strong> – 更新した設定値</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.write_ruled_line">
+<code class="descclassname">src.util.</code><code class="descname">write_ruled_line</code><span class="sig-paren">(</span><em>img</em>, <em>interval=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#write_ruled_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.write_ruled_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>画像に罫線を追加する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 画像</p></li>
+<li><p><strong>interval</strong> (<em>int</em>) – 罫線の間隔</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ruled_img</strong> – 画像に罫線を追加した画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, sUeharaE4
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
