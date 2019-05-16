@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.3
+      - image: circleci/python
     steps:
       - checkout
       - run:
@@ -12,12 +12,13 @@ jobs:
             . venv/bin/activate
             pip install pytest
             pip install pytest-cov
-            pip install -r ../requirements.txt
+            pip install -r requirements.txt
       - run:
           name: run test
           command: |
             . venv/bin/activate
             pytest --junitxml=test-reports/junit.xml
+          working_directory: tests/
       - store-test-results:
           path: test-reports
       - run:
@@ -25,3 +26,4 @@ jobs:
           command: |
             . venv/bin/activate
             pytest --cov=src
+          working_directory: tests/
