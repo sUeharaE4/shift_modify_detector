@@ -99,7 +99,8 @@ def check_config(config):
     return True
 
 
-if __name__ == '__main__':
+def main():
+    global logger
     # 入力チェック(型までは見ない)
     args = parse_args()
     if not isfile(args.conf_path):
@@ -190,3 +191,7 @@ if __name__ == '__main__':
                                                       (0, 255, 0), 5)
             cv2.imwrite(output_img_path, pair_img)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
+
+
+if __name__ == '__main__':
+    main()
