@@ -6,8 +6,9 @@ import json
 import cv2
 
 import sys
-sys.path.append(os.getcwd('../src/'))
-sys.path.append(os.getcwd('../src/log_mod/'))
+sys.path.append(os.getcwd())
+sys.path.append('../src/')
+sys.path.append('../src/log_mod/')
 
 import util
 
