@@ -9,6 +9,7 @@ jobs:
           name: Setup custom environment variables
           command: |
             echo $(export PYTHONPATH=${PWD}/src) >> $BASH_ENV
+            echo ${PYTHONPATH}
       - run:
           name: install dependencies
           command: |
