@@ -6,7 +6,7 @@ import json
 import cv2
 
 import sys
-sys.path.append(os.getcwd())
+sys.path.append(os.getcwd('../src/'))
 
 import util
 
