@@ -189,12 +189,9 @@ def main():
     global logger
     # 入力チェック(型までは見ない)
     args = parse_args()
-    if not isfile(args.conf_path):
-        print('設定ファイルがありません,指定されたパス：' + args.conf_path)
+    config = util.get_config(args)
+    if config is None:
         sys.exit(1)
-    config = util.read_config(args.conf_path)
-    config = util.set_config(config, args)
-    config = util.modify_path_in_config(config)
     valid_input = check_config(config)
     if not valid_input:
         sys.exit(1)

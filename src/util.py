@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import yaml
 import os
+from os.path import isfile
 import pandas as pd
 import base64
 
@@ -329,6 +330,29 @@ def modify_path_in_config(config):
     for conf_type in conf_type_has_path:
         for key in config[conf_type].keys():
             config[conf_type][key] = config[conf_type][key].replace(other_sep_dir, sep_dir)
+    return config
+
+
+def get_config(args):
+    """
+    configファイルを読み込み、実行時引数で指定されたパラメタで更新する.
+
+    Parameters
+    ----------
+    args : Namespace
+        実行時引数をparseした結果
+
+    Returns
+    -------
+    config : dict
+        更新した設定値.但し、設定ファイルが存在しない場合はNone.
+    """
+    if not isfile(args.conf_path):
+        print('設定ファイルがありません,指定されたパス：' + args.conf_path)
+        return None
+    config = read_config(args.conf_path)
+    config = set_config(config, args)
+    config = modify_path_in_config(config)
     return config
 
 

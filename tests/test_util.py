@@ -73,6 +73,21 @@ def test_modify_path_in_config(conf_path):
             assert config_update[conf_type][key].count(other_sep_dir) == 0
 
 
+@pytest.mark.parametrize('input_path', [
+    ('conf/detect_default.yml'),
+    ('NotFoundPath'),
+])
+def test_get_config(input_path):
+    test_args = argparse.Namespace()
+    test_args.conf_path = input_path
+    config = util.get_config(test_args)
+    if input_path == 'NotFoundPath':
+        assert config is None
+    else:
+        for conf_key in config.keys():
+            assert config[conf_key] is not None
+
+
 @pytest.mark.parametrize('input_csv, expect_json', [
     ('csv2json/01.csv', 'csv2json/01.json'),
 ])
