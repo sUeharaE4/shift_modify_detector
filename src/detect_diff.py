@@ -162,7 +162,6 @@ def main():
         # 矩形領域の抽出
         contours, hierarchy = cv2.findContours(img_masked_dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         # 1辺が小さすぎる矩形の除外
-        min_area = DROP_MIN_LENGTH
         large_contours = []
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
@@ -186,9 +185,7 @@ def main():
             output_img_path = os.path.join(OUTPUT_DIR, output_file_name + img_type)
             for cnt in large_contours:
                 x, y, w, h = cv2.boundingRect(cnt)
-                written_img_rectangle = cv2.rectangle(pair_img,
-                                                      (x, y), (x + w, y + h),
-                                                      (0, 255, 0), 5)
+                cv2.rectangle(pair_img, (x, y), (x + w, y + h), (0, 255, 0), 5)
             cv2.imwrite(output_img_path, pair_img)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
