@@ -91,3 +91,13 @@ def test_create_text_detect_request(input_csv, input_img, expect_json):
     img = cv2.imread(input_img)
     api_json = util.create_text_detect_request(rectangle_json, img)
     assert api_json == expect
+
+
+@pytest.mark.parametrize('input_img', [
+    ('images/mnist_7.png'),
+])
+def test_img2float64(input_img):
+    img = cv2.imread(input_img)
+    float_img = util.img2float64(img)
+    assert float_img.dtype == np.float64
+    assert img.shape == float_img.shape

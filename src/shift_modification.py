@@ -89,13 +89,6 @@ def check_config(config):
     return True
 
 
-def img2float64(img):
-    height, width = img.shape[0:2]
-    float_img = np.asarray(img, dtype=np.float64)
-    float_img = float_img[slice(height), slice(width)]
-    return float_img
-
-
 def rotate_modify(base_img, pair_img):
     """
     回転方向のズレを修正する.
@@ -231,8 +224,8 @@ if __name__ == '__main__':
         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
 
         expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
-        expand_base_img = img2float64(expand_base_img)
-        expand_pair_img = img2float64(expand_pair_img)
+        expand_base_img = util.img2float64(expand_base_img)
+        expand_pair_img = util.img2float64(expand_pair_img)
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
 
         # 回転方向の修正

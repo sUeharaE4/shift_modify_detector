@@ -116,6 +116,27 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
     return modify_written
 
 
+def img2float64(img):
+    """
+    画像にフーリエ変換を施すためにfloatにする.
+
+    Parameters
+    ----------
+    img : numpy.ndarray
+        floatにしたい画像(uint8等).
+
+    Returns
+    -------
+    numpy.ndarray
+        float64にした画像.
+
+    """
+    height, width = img.shape[0:2]
+    float_img = np.asarray(img, dtype=np.float64)
+    float_img = float_img[slice(height), slice(width)]
+    return float_img
+
+
 def exchange_black_white(img):
     """
     画像の白黒を反転する.
