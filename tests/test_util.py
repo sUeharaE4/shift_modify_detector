@@ -7,6 +7,7 @@ import cv2
 
 import sys
 sys.path.append(os.getcwd('../src/'))
+sys.path.append(os.getcwd('../src/log_mod/'))
 
 import util
 
