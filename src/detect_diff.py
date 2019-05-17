@@ -18,8 +18,6 @@ extra_args['tab'] = '\t'
 detect_logger_cls = modify_logger.ModifyLogger()
 logger = detect_logger_cls.create_logger(__name__, INFO)
 
-CONFIG_PATH = 'conf/detect.yml'
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像の差分抽出するスクリプト.' +
@@ -57,6 +55,8 @@ def parse_args():
     # Debug log を出力するか
     parser.add_argument('--debug', type=strtobool,
                         help='debug log をコンソールに出力する場合はTrue.出力する場合進捗表示が崩れる.')
+    parser.add_argument('--conf_path', type=str, default='conf/detect.yml',
+                        help='設定ファイルのパス.デフォルトはconf/detect.yml.')
 
     args = parser.parse_args()
 
@@ -102,7 +102,10 @@ def check_config(config):
 if __name__ == '__main__':
     # 入力チェック(型までは見ない)
     args = parse_args()
-    config = util.read_config(CONFIG_PATH)
+    if not isfile(args.conf_path):
+        print('設定ファイルがありません,指定されたパス：' + args.conf_path)
+        sys.exit(1)
+    config = util.read_config(args.conf_path)
     config = util.set_config(config, args)
     config = util.modify_path_in_config(config)
     valid_input = check_config(config)
