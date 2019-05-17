@@ -6,6 +6,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Setup custom environment variables
+          command: |
+            echo $(export PYTHONPATH=${PWD}/src) >> $BASH_ENV
+      - run:
           name: install dependencies
           command: |
             python3 -m venv venv
@@ -16,7 +20,6 @@ jobs:
       - run:
           name: run test
           command: |
-            export PYTHONPATH=${PWD}/src
             . ../venv/bin/activate
             pytest -v -l
           working_directory: tests/
@@ -25,7 +28,6 @@ jobs:
       - run:
           name: run test-cov
           command: |
-            export PYTHONPATH=${PWD}/src
             . ../venv/bin/activate
             pytest --cov=src
           working_directory: tests/
