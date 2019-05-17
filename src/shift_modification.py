@@ -88,7 +88,7 @@ def check_config(config):
     return True
 
 
-def rotate_modify(base_img, pair_img):
+def rotate_modify(base_img, pair_img, resize_shape=(512, 512), mag_scale=100):
     """
     回転方向のズレを修正する.
 
@@ -98,6 +98,11 @@ def rotate_modify(base_img, pair_img):
         テンプレート画像
     pair_img : numpy.ndarray
         修正対象画像
+    resize_shape : tuple
+        画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため
+        リサイズが必要.その際のサイズ.(512, 512)等.
+    mag_scale : int
+        RIPOCする際のmagnitude_scale.
 
     Returns
     -------
@@ -105,24 +110,26 @@ def rotate_modify(base_img, pair_img):
         回転方向のズレを修正した画像.
     """
     # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
-    resize_base_img, resize_pair_img = util.resize_imgs(base_img, pair_img, RESIZE_SHAPE)
+    resize_base_img, resize_pair_img = util.resize_imgs(base_img, pair_img, resize_shape)
     row, col = resize_base_img.shape[0:2]
     hrow = int(row/2)
     center = tuple(np.array(resize_base_img.shape) / 2)
     logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]), extra=extra_args)
 
     # 対数極座標変換と回転・拡大の推定
-    base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img, resize_pair_img, MAG_SCALE)
+    base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img, resize_pair_img, mag_scale)
 
     row_shift, col_shift, _ = ripoc.fft_coreg_LP(base_log_poler, pair_log_poler)
     angle_est = - row_shift / (hrow) * 180
-    scale_est = 1.0 - col_shift / MAG_SCALE
+    scale_est = 1.0 - col_shift / mag_scale
 
     # rotate slave
     rot_matrix = cv2.getRotationMatrix2D(center, angle_est, 1.0)
-    g_coreg = cv2.warpAffine(resize_pair_img, rot_matrix, resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
+    g_coreg = cv2.warpAffine(resize_pair_img, rot_matrix,
+                             resize_pair_img.shape, flags=cv2.INTER_LANCZOS4)
     # scale slave
-    g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est, interpolation=cv2.INTER_LANCZOS4)
+    g_coreg_tmp = cv2.resize(g_coreg, None, fx=scale_est, fy=scale_est,
+                             interpolation=cv2.INTER_LANCZOS4)
     row_coreg_tmp = g_coreg_tmp.shape[0]
     col_coreg_tmp = g_coreg_tmp.shape[1]
     g_coreg = np.zeros((row, col))
@@ -140,7 +147,7 @@ def rotate_modify(base_img, pair_img):
     logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
     logger.debug('scale : '        + str(scale_est), extra=extra_args)
 
-    tmp_height, tmp_width = expand_pair_img.shape
+    tmp_height, tmp_width = pair_img.shape
     center = (tmp_width / 2, tmp_height / 2)
     trans = cv2.getRotationMatrix2D(center, angle_est, 1.0)
     modify_img = cv2.warpAffine(pair_img, trans, (tmp_width, tmp_height))
@@ -172,13 +179,14 @@ def shift_modify(base_img, pair_img):
     logger.debug('y_shift : ' + str(y_shift), extra=extra_args)
 
     trans = np.float32([[1, 0, -1 * x_shift], [0, 1, -1 * y_shift]])
-    modify_img = cv2.warpAffine(rotate_expand_pair_img, trans, (width, height))
+    modify_img = cv2.warpAffine(pair_img, trans, (width, height))
     modify_img = util.exchange_black_white(modify_img)
 
     return modify_img
 
 
-if __name__ == '__main__':
+def main():
+    global logger
     # 入力チェック(型までは見ない)
     args = parse_args()
     if not isfile(args.conf_path):
@@ -231,7 +239,8 @@ if __name__ == '__main__':
         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
 
         # 回転方向の修正
-        rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img)
+        rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
+                                               RESIZE_SHAPE, MAG_SCALE)
         # 回転修正したのでPOC
         modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
         modified_img = modified_img[0:default_height, 0:default_width]
@@ -265,3 +274,7 @@ if __name__ == '__main__':
             show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
             cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
+
+
+if __name__ == '__main__':
+    main()
