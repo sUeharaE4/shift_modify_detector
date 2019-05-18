@@ -145,6 +145,7 @@
 <span class="kn">import</span> <span class="nn">cv2</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">isfile</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">base64</span>
 
@@ -257,6 +258,27 @@
     <span class="n">modify_written</span> <span class="o">=</span> <span class="n">modify_img</span><span class="p">(</span><span class="n">written_img</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="n">background_color</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">modify_written</span></div>
+
+
+<div class="viewcode-block" id="img2float64"><a class="viewcode-back" href="../../src.html#src.util.img2float64">[docs]</a><span class="k">def</span> <span class="nf">img2float64</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    画像にフーリエ変換を施すためにfloatにする.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : numpy.ndarray</span>
+<span class="sd">        floatにしたい画像(uint8等).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        float64にした画像.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">float_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">float_img</span> <span class="o">=</span> <span class="n">float_img</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">height</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">float_img</span></div>
 
 
 <div class="viewcode-block" id="exchange_black_white"><a class="viewcode-back" href="../../src.html#src.util.exchange_black_white">[docs]</a><span class="k">def</span> <span class="nf">exchange_black_white</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
@@ -451,6 +473,29 @@
     <span class="k">for</span> <span class="n">conf_type</span> <span class="ow">in</span> <span class="n">conf_type_has_path</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">other_sep_dir</span><span class="p">,</span> <span class="n">sep_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="get_config"><a class="viewcode-back" href="../../src.html#src.util.get_config">[docs]</a><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    configファイルを読み込み、実行時引数で指定されたパラメタで更新する.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    args : Namespace</span>
+<span class="sd">        実行時引数をparseした結果</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    config : dict</span>
+<span class="sd">        更新した設定値.但し、設定ファイルが存在しない場合はNone.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">conf_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;設定ファイルがありません,指定されたパス：&#39;</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">conf_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">conf_path</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">modify_path_in_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">config</span></div>
 
 

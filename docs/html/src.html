@@ -192,6 +192,11 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="src.detect_diff.main">
+<code class="descclassname">src.detect_diff.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/detect_diff.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.detect_diff.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="src.detect_diff.parse_args">
 <code class="descclassname">src.detect_diff.</code><code class="descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/detect_diff.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.detect_diff.parse_args" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -250,8 +255,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="src.shift_modification.img2float64">
-<code class="descclassname">src.shift_modification.</code><code class="descname">img2float64</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#img2float64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.img2float64" title="Permalink to this definition">¶</a></dt>
+<dt id="src.shift_modification.main">
+<code class="descclassname">src.shift_modification.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -261,13 +266,16 @@
 
 <dl class="function">
 <dt id="src.shift_modification.rotate_modify">
-<code class="descclassname">src.shift_modification.</code><code class="descname">rotate_modify</code><span class="sig-paren">(</span><em>base_img</em>, <em>pair_img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#rotate_modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.rotate_modify" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.shift_modification.</code><code class="descname">rotate_modify</code><span class="sig-paren">(</span><em>base_img</em>, <em>pair_img</em>, <em>resize_shape=(512</em>, <em>512)</em>, <em>mag_scale=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#rotate_modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.rotate_modify" title="Permalink to this definition">¶</a></dt>
 <dd><p>回転方向のズレを修正する.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
 <li><p><strong>pair_img</strong> (<em>numpy.ndarray</em>) – 修正対象画像</p></li>
+<li><p><strong>resize_shape</strong> (<em>tuple</em>) – 画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため
+リサイズが必要.その際のサイズ.(512, 512)等.</p></li>
+<li><p><strong>mag_scale</strong> (<em>int</em>) – RIPOCする際のmagnitude_scale.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -440,6 +448,40 @@
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>expand_img</strong> – 1辺の長さが2の累乗にした画像</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.get_config">
+<code class="descclassname">src.util.</code><code class="descname">get_config</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#get_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>configファイルを読み込み、実行時引数で指定されたパラメタで更新する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>Namespace</em>) – 実行時引数をparseした結果</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>config</strong> – 更新した設定値.但し、設定ファイルが存在しない場合はNone.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.img2float64">
+<code class="descclassname">src.util.</code><code class="descname">img2float64</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#img2float64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.img2float64" title="Permalink to this definition">¶</a></dt>
+<dd><p>画像にフーリエ変換を施すためにfloatにする.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>numpy.ndarray</em>) – floatにしたい画像(uint8等).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>float64にした画像.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>

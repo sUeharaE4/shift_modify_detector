@@ -161,8 +161,6 @@
 <span class="n">modify_logger_cls</span> <span class="o">=</span> <span class="n">modify_logger</span><span class="o">.</span><span class="n">ModifyLogger</span><span class="p">()</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">modify_logger_cls</span><span class="o">.</span><span class="n">create_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">INFO</span><span class="p">)</span>
 
-<span class="n">CONFIG_PATH</span> <span class="o">=</span> <span class="s1">&#39;conf/shift.yml&#39;</span>
-
 
 <div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../src.html#src.shift_modification.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;テンプレート画像と入力画像のズレを修正するスクリプト.&#39;</span><span class="p">)</span>
@@ -190,7 +188,8 @@
     <span class="c1"># Debug log を出力するか</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">strtobool</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.&#39;</span><span class="p">)</span>
-
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--conf_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;conf/shift.yml&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;設定ファイルのパス.デフォルトはconf/shift.yml.&#39;</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">args</span></div>
@@ -232,14 +231,7 @@
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="img2float64"><a class="viewcode-back" href="../../src.html#src.shift_modification.img2float64">[docs]</a><span class="k">def</span> <span class="nf">img2float64</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
-    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">float_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="n">float_img</span> <span class="o">=</span> <span class="n">float_img</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">height</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
-    <span class="k">return</span> <span class="n">float_img</span></div>
-
-
-<div class="viewcode-block" id="rotate_modify"><a class="viewcode-back" href="../../src.html#src.shift_modification.rotate_modify">[docs]</a><span class="k">def</span> <span class="nf">rotate_modify</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">):</span>
+<div class="viewcode-block" id="rotate_modify"><a class="viewcode-back" href="../../src.html#src.shift_modification.rotate_modify">[docs]</a><span class="k">def</span> <span class="nf">rotate_modify</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">resize_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">mag_scale</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    回転方向のズレを修正する.</span>
 
@@ -249,6 +241,11 @@
 <span class="sd">        テンプレート画像</span>
 <span class="sd">    pair_img : numpy.ndarray</span>
 <span class="sd">        修正対象画像</span>
+<span class="sd">    resize_shape : tuple</span>
+<span class="sd">        画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため</span>
+<span class="sd">        リサイズが必要.その際のサイズ.(512, 512)等.</span>
+<span class="sd">    mag_scale : int</span>
+<span class="sd">        RIPOCする際のmagnitude_scale.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -256,24 +253,26 @@
 <span class="sd">        回転方向のズレを修正した画像.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)</span>
-    <span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">resize_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">RESIZE_SHAPE</span><span class="p">)</span>
+    <span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">resize_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">resize_shape</span><span class="p">)</span>
     <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">hrow</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">center</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;resize_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
 
     <span class="c1"># 対数極座標変換と回転・拡大の推定</span>
-    <span class="n">base_log_poler</span><span class="p">,</span> <span class="n">pair_log_poler</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">logpolar_module</span><span class="p">(</span><span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">MAG_SCALE</span><span class="p">)</span>
+    <span class="n">base_log_poler</span><span class="p">,</span> <span class="n">pair_log_poler</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">logpolar_module</span><span class="p">(</span><span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">mag_scale</span><span class="p">)</span>
 
     <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">fft_coreg_LP</span><span class="p">(</span><span class="n">base_log_poler</span><span class="p">,</span> <span class="n">pair_log_poler</span><span class="p">)</span>
     <span class="n">angle_est</span> <span class="o">=</span> <span class="o">-</span> <span class="n">row_shift</span> <span class="o">/</span> <span class="p">(</span><span class="n">hrow</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span>
-    <span class="n">scale_est</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">col_shift</span> <span class="o">/</span> <span class="n">MAG_SCALE</span>
+    <span class="n">scale_est</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">col_shift</span> <span class="o">/</span> <span class="n">mag_scale</span>
 
     <span class="c1"># rotate slave</span>
     <span class="n">rot_matrix</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getRotationMatrix2D</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">angle_est</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-    <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">rot_matrix</span><span class="p">,</span> <span class="n">resize_pair_img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+    <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">rot_matrix</span><span class="p">,</span>
+                             <span class="n">resize_pair_img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
     <span class="c1"># scale slave</span>
-    <span class="n">g_coreg_tmp</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">g_coreg</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+    <span class="n">g_coreg_tmp</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">g_coreg</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span>
+                             <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
     <span class="n">row_coreg_tmp</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">col_coreg_tmp</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
@@ -291,7 +290,7 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;rotate angle : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">angle_est</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;scale : &#39;</span>        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">scale_est</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
 
-    <span class="n">tmp_height</span><span class="p">,</span> <span class="n">tmp_width</span> <span class="o">=</span> <span class="n">expand_pair_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">tmp_height</span><span class="p">,</span> <span class="n">tmp_width</span> <span class="o">=</span> <span class="n">pair_img</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">tmp_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">trans</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getRotationMatrix2D</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">angle_est</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
     <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="n">tmp_width</span><span class="p">,</span> <span class="n">tmp_height</span><span class="p">))</span>
@@ -323,18 +322,19 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;y_shift : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_shift</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
 
     <span class="n">trans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">x_shift</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">y_shift</span><span class="p">]])</span>
-    <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">rotate_expand_pair_img</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+    <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
     <span class="n">modify_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">exchange_black_white</span><span class="p">(</span><span class="n">modify_img</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">modify_img</span></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../src.html#src.shift_modification.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">logger</span>
     <span class="c1"># 入力チェック(型までは見ない)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">CONFIG_PATH</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">modify_path_in_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">valid_input</span> <span class="o">=</span> <span class="n">check_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_input</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -374,12 +374,13 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;default_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
 
         <span class="n">expand_base_img</span><span class="p">,</span> <span class="n">expand_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">expand_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">)</span>
-        <span class="n">expand_base_img</span> <span class="o">=</span> <span class="n">img2float64</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">)</span>
-        <span class="n">expand_pair_img</span> <span class="o">=</span> <span class="n">img2float64</span><span class="p">(</span><span class="n">expand_pair_img</span><span class="p">)</span>
+        <span class="n">expand_base_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">img2float64</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">)</span>
+        <span class="n">expand_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">img2float64</span><span class="p">(</span><span class="n">expand_pair_img</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;expand_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">expand_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
 
         <span class="c1"># 回転方向の修正</span>
-        <span class="n">rotate_expand_pair_img</span> <span class="o">=</span> <span class="n">rotate_modify</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">,</span> <span class="n">expand_pair_img</span><span class="p">)</span>
+        <span class="n">rotate_expand_pair_img</span> <span class="o">=</span> <span class="n">rotate_modify</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">,</span> <span class="n">expand_pair_img</span><span class="p">,</span>
+                                               <span class="n">RESIZE_SHAPE</span><span class="p">,</span> <span class="n">MAG_SCALE</span><span class="p">)</span>
         <span class="c1"># 回転修正したのでPOC</span>
         <span class="n">modified_img</span> <span class="o">=</span> <span class="n">shift_modify</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">,</span> <span class="n">rotate_expand_pair_img</span><span class="p">)</span>
         <span class="n">modified_img</span> <span class="o">=</span> <span class="n">modified_img</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">default_height</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">default_width</span><span class="p">]</span>
@@ -412,7 +413,11 @@
             <span class="n">scale</span> <span class="o">=</span> <span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">show_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">show_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">show_img</span><span class="p">,</span> <span class="n">dsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
             <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">diff_dir</span><span class="p">,</span> <span class="n">output_img_name</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">),</span> <span class="n">show_img</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;your inputs : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;your inputs : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
            </div>
