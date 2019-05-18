@@ -1,6 +1,14 @@
 import numpy as np
 import argparse
 import pytest
+import os
+import json
+import cv2
+
+import sys
+sys.path.append(os.getcwd())
+sys.path.append('../src/')
+sys.path.append('../src/log_mod/')
 
 import util
 
@@ -38,6 +46,75 @@ def test_set_config(conf_path, input_args):
         test_args.debug = input_args['mode']['debug']
     if conf_type == 'options' and conf_key == 'threthold_BW':
         test_args.threthold_BW = input_args['options']['threthold_BW']
+    config_update = util.set_config(config, test_args)
+    # 上書き確認
+    assert config_update[conf_type][conf_key] == input_args[conf_type][conf_key]
+    # 未指定が更新されていないことの確認
+    for type_key in config.keys():
+        for key in config[type_key].keys():
+            if key != conf_key:
+                assert config[type_key][key] == config_update[type_key][key]
 
-    config = util.set_config(config, test_args)
-    assert config[conf_type][conf_key] == input_args[conf_type][conf_key]
+
+@pytest.mark.parametrize('conf_path', [
+    ('conf/detect_default.yml'),
+    ('conf/shift_default.yml'),
+    ('conf/detect_path_posix.yml'),
+])
+def test_modify_path_in_config(conf_path):
+    conf_type_has_path = ['input', 'output']
+    sep_change_dict = {'/': '\\', '\\': '/'}
+    sep_dir = os.sep
+    other_sep_dir = sep_change_dict[sep_dir]
+    config = util.read_config(conf_path)
+    config_update = util.modify_path_in_config(config)
+    for conf_type in conf_type_has_path:
+        for key in config_update[conf_type].keys():
+            assert config_update[conf_type][key].count(other_sep_dir) == 0
+
+
+@pytest.mark.parametrize('input_path', [
+    ('conf/detect_default.yml'),
+    ('NotFoundPath'),
+])
+def test_get_config(input_path):
+    test_args = argparse.Namespace()
+    test_args.conf_path = input_path
+    config = util.get_config(test_args)
+    if input_path == 'NotFoundPath':
+        assert config is None
+    else:
+        for conf_key in config.keys():
+            assert config[conf_key] is not None
+
+
+@pytest.mark.parametrize('input_csv, expect_json', [
+    ('csv2json/01.csv', 'csv2json/01.json'),
+])
+def test_csv2json(input_csv, expect_json):
+    with open(expect_json, 'r', encoding='utf-8') as j:
+        expect = json.load(j)
+    json_csv = util.csv2json(input_csv)
+    assert json_csv == expect
+
+
+@pytest.mark.parametrize('input_csv, input_img, expect_json', [
+    ('csv2json/01.csv', 'images/mnist_7.png', 'api_json/text_detect_req_01.json'),
+])
+def test_create_text_detect_request(input_csv, input_img, expect_json):
+    rectangle_json = util.csv2json(input_csv)
+    with open(expect_json, 'r', encoding='utf-8') as j:
+        expect = json.load(j)
+    img = cv2.imread(input_img)
+    api_json = util.create_text_detect_request(rectangle_json, img)
+    assert api_json == expect
+
+
+@pytest.mark.parametrize('input_img', [
+    ('images/mnist_7.png'),
+])
+def test_img2float64(input_img):
+    img = cv2.imread(input_img)
+    float_img = util.img2float64(img)
+    assert float_img.dtype == np.float64
+    assert img.shape == float_img.shape

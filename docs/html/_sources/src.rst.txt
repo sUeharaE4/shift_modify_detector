@@ -1,0 +1,53 @@
+src package
+===========
+
+Subpackages
+-----------
+
+.. toctree::
+
+    src.log_mod
+
+Submodules
+----------
+
+src.detect\_diff module
+-----------------------
+
+.. automodule:: src.detect_diff
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+src.ripoc module
+----------------
+
+.. automodule:: src.ripoc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+src.shift\_modification module
+------------------------------
+
+.. automodule:: src.shift_modification
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+src.util module
+---------------
+
+.. automodule:: src.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: src
+    :members:
+    :undoc-members:
+    :show-inheritance:

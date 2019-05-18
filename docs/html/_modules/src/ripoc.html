@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>src.ripoc &mdash; shift_mod_detector  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> shift_mod_detector
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">shift_mod_detector</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>src.ripoc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for src.ripoc</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">numpy.fft</span> <span class="k">import</span> <span class="n">fft2</span><span class="p">,</span> <span class="n">ifft2</span><span class="p">,</span> <span class="n">fftshift</span><span class="p">,</span> <span class="n">ifftshift</span>
+
+
+<div class="viewcode-block" id="fft_coreg_trans"><a class="viewcode-back" href="../../src.html#src.ripoc.fft_coreg_trans">[docs]</a><span class="k">def</span> <span class="nf">fft_coreg_trans</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">slave</span><span class="p">):</span>
+
+    <span class="c1"># hunning</span>
+    <span class="c1"># hy = np.hanning(master.shape[0])</span>
+    <span class="c1"># hx = np.hanning(master.shape[1])</span>
+    <span class="c1"># hw = hy.reshape(hy.shape[0],1) * hx</span>
+    <span class="c1"># master = master * hw</span>
+    <span class="c1"># slave = slave * hw</span>
+
+    <span class="c1"># fft2</span>
+    <span class="n">master_fd</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">master</span><span class="p">)</span>
+    <span class="n">slave_fd</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">slave</span><span class="p">)</span>
+
+    <span class="c1"># normalization</span>
+    <span class="n">master_nfd</span> <span class="o">=</span> <span class="n">master_fd</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">master_fd</span><span class="p">)</span>
+    <span class="n">slave_nfd</span> <span class="o">=</span> <span class="n">slave_fd</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slave_fd</span><span class="p">)</span>
+
+    <span class="c1"># shift estimation</span>
+    <span class="n">usfac</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">Nc</span><span class="p">,</span> <span class="n">Nr</span><span class="p">,</span> <span class="n">peak_map</span> <span class="o">=</span> <span class="n">dftregistration</span><span class="p">(</span><span class="n">master_nfd</span><span class="p">,</span> <span class="n">slave_nfd</span><span class="p">,</span> <span class="n">usfac</span><span class="p">)</span>
+
+    <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">slave</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">diffphase</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">row_shift</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">col_shift</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># coregistration</span>
+    <span class="n">slave_fd_crg</span> <span class="o">=</span> <span class="n">slave_fd</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">row_shift</span><span class="o">*</span><span class="n">Nr</span><span class="o">/</span><span class="n">nr</span><span class="o">-</span><span class="n">col_shift</span><span class="o">*</span><span class="n">Nc</span><span class="o">/</span><span class="n">nc</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">diffphase</span><span class="p">)</span>
+    <span class="n">slave_crg</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">slave_fd_crg</span><span class="p">)</span>
+    <span class="n">slave_crg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slave_crg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">row_shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">col_shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">peak_map</span><span class="p">,</span> <span class="n">slave_crg</span></div>
+
+
+<div class="viewcode-block" id="fft_coreg_LP"><a class="viewcode-back" href="../../src.html#src.ripoc.fft_coreg_LP">[docs]</a><span class="k">def</span> <span class="nf">fft_coreg_LP</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">slave</span><span class="p">):</span>
+
+    <span class="c1"># hunning</span>
+    <span class="c1"># hy = np.hanning(master.shape[0])</span>
+    <span class="c1"># hx = np.hanning(master.shape[1])</span>
+    <span class="c1"># hw = hy.reshape(hy.shape[0],1) * hx</span>
+    <span class="c1"># master = master * hw</span>
+    <span class="c1"># slave = slave * hw</span>
+
+    <span class="c1"># fft2</span>
+    <span class="n">master_fd</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">master</span><span class="p">)</span>
+    <span class="n">slave_fd</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">slave</span><span class="p">)</span>
+
+    <span class="c1"># normalization</span>
+    <span class="n">master_nfd</span> <span class="o">=</span> <span class="n">master_fd</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">master_fd</span><span class="p">)</span>
+    <span class="n">slave_nfd</span> <span class="o">=</span> <span class="n">slave_fd</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slave_fd</span><span class="p">)</span>
+
+    <span class="n">usfac</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">Nc</span><span class="p">,</span> <span class="n">Nr</span><span class="p">,</span> <span class="n">peak_map</span> <span class="o">=</span> <span class="n">dftregistration</span><span class="p">(</span><span class="n">master_nfd</span><span class="p">,</span> <span class="n">slave_nfd</span><span class="p">,</span> <span class="n">usfac</span><span class="p">)</span>
+
+    <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">slave</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># diffphase = output[1]</span>
+    <span class="n">row_shift</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">col_shift</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">row_shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">col_shift</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">peak_map</span></div>
+
+
+<div class="viewcode-block" id="dftregistration"><a class="viewcode-back" href="../../src.html#src.ripoc.dftregistration">[docs]</a><span class="k">def</span> <span class="nf">dftregistration</span><span class="p">(</span><span class="n">buf1ft</span><span class="p">,</span> <span class="n">buf2ft</span><span class="p">,</span> <span class="n">usfac</span><span class="p">):</span>
+
+    <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">buf2ft</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">Nr</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">nr</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nr</span><span class="o">/</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="n">Nc</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">nc</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nc</span><span class="o">/</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">usfac</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="c1"># Simple computation of error and phase difference without registration</span>
+        <span class="n">CCmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">buf1ft</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">buf2ft</span><span class="p">))</span>
+        <span class="n">row_shift</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">col_shift</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">elif</span> <span class="n">usfac</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="c1"># Single pixel registration</span>
+        <span class="n">CC</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">buf1ft</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">buf2ft</span><span class="p">))</span>
+        <span class="n">CCabs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
+        <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">CCabs</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">CCabs</span><span class="p">))</span>
+        <span class="n">CCmax</span> <span class="o">=</span> <span class="n">CC</span><span class="p">[</span><span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span><span class="p">]</span><span class="o">*</span><span class="n">nr</span><span class="o">*</span><span class="n">nc</span>
+
+        <span class="c1"># Now change shifts so that they represent relative shifts and not indices</span>
+        <span class="n">row_shift</span> <span class="o">=</span> <span class="n">Nr</span><span class="p">[</span><span class="n">row_shift</span><span class="p">]</span>
+        <span class="n">col_shift</span> <span class="o">=</span> <span class="n">Nc</span><span class="p">[</span><span class="n">col_shift</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">usfac</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="c1"># Start with usfac == 2</span>
+        <span class="n">CC</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">FTpad</span><span class="p">(</span><span class="n">buf1ft</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">buf2ft</span><span class="p">),(</span><span class="mi">2</span><span class="o">*</span><span class="n">nr</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">nc</span><span class="p">)))</span>
+        <span class="n">CCabs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
+
+        <span class="c1"># generate peak map</span>
+        <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">CCabs</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">CCabs</span><span class="p">))</span>
+        <span class="n">peak_map</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">CCabs</span><span class="p">)</span>
+        <span class="n">peak_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">peak_map</span><span class="p">,</span> <span class="o">-</span><span class="n">row_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">peak_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">peak_map</span><span class="p">,</span> <span class="o">-</span><span class="n">col_shift</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># row_shift, col_shift = row_shift[0], col_shift[0]</span>
+        <span class="n">CCmax</span> <span class="o">=</span> <span class="n">CC</span><span class="p">[</span><span class="n">row_shift</span><span class="p">,</span><span class="n">col_shift</span><span class="p">]</span><span class="o">*</span><span class="n">nr</span><span class="o">*</span><span class="n">nc</span>
+
+        <span class="c1"># Now change shifts so that they represent relative shifts and not indices</span>
+        <span class="n">Nr2</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">nr</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nr</span><span class="p">)))</span>
+        <span class="n">Nc2</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">nc</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nc</span><span class="p">)))</span>
+        <span class="n">row_shift</span> <span class="o">=</span> <span class="n">Nr2</span><span class="p">[</span><span class="n">row_shift</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">col_shift</span> <span class="o">=</span> <span class="n">Nc2</span><span class="p">[</span><span class="n">col_shift</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="c1"># If upsampling &gt; 2, then refine estimate with matrix multiply DFT</span>
+        <span class="k">if</span> <span class="n">usfac</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># DFT computation</span>
+            <span class="c1"># Initial shift estimate in upsampled grid</span>
+            <span class="n">row_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">row_shift</span><span class="o">*</span><span class="n">usfac</span><span class="p">)</span><span class="o">/</span><span class="n">usfac</span>
+            <span class="n">col_shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">col_shift</span><span class="o">*</span><span class="n">usfac</span><span class="p">)</span><span class="o">/</span><span class="n">usfac</span>
+            <span class="c1"># Center of output array at dftshift+1</span>
+            <span class="n">dftshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">usfac</span><span class="o">*</span><span class="mf">1.5</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># Matrix multiply DFT around the current shift estimate</span>
+            <span class="n">CC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">dftups</span><span class="p">(</span><span class="n">buf2ft</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">buf1ft</span><span class="p">),</span>
+                                     <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">usfac</span><span class="o">*</span><span class="mf">1.5</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">usfac</span><span class="o">*</span><span class="mf">1.5</span><span class="p">),</span>
+                                     <span class="n">usfac</span><span class="p">,</span> <span class="n">dftshift</span><span class="o">-</span><span class="n">row_shift</span><span class="o">*</span><span class="n">usfac</span><span class="p">,</span>
+                                     <span class="n">dftshift</span><span class="o">-</span><span class="n">col_shift</span><span class="o">*</span><span class="n">usfac</span><span class="p">))</span>
+
+            <span class="c1"># Locate maximum and map back to original pixel grid</span>
+            <span class="n">CCabs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
+            <span class="n">rloc</span><span class="p">,</span> <span class="n">cloc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">CCabs</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">CCabs</span><span class="p">))</span>
+
+            <span class="c1"># rloc, cloc = rloc[0], cloc[0]</span>
+            <span class="n">CCmax</span> <span class="o">=</span> <span class="n">CC</span><span class="p">[</span><span class="n">rloc</span><span class="p">,</span> <span class="n">cloc</span><span class="p">]</span>
+            <span class="n">rloc</span> <span class="o">=</span> <span class="n">rloc</span> <span class="o">-</span> <span class="n">dftshift</span>
+            <span class="n">cloc</span> <span class="o">=</span> <span class="n">cloc</span> <span class="o">-</span> <span class="n">dftshift</span>
+            <span class="n">row_shift</span> <span class="o">=</span> <span class="n">row_shift</span> <span class="o">+</span> <span class="n">rloc</span><span class="o">/</span><span class="n">usfac</span>
+            <span class="n">col_shift</span> <span class="o">=</span> <span class="n">col_shift</span> <span class="o">+</span> <span class="n">cloc</span><span class="o">/</span><span class="n">usfac</span>
+
+        <span class="c1"># If its only one row or column the mportift along that dimension has no effect. Set to zero.</span>
+        <span class="k">if</span> <span class="n">nr</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">row_shift</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">nc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">col_shift</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">rg00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">buf1ft</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">rf00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">buf2ft</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CCmax</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">rg00</span><span class="o">*</span><span class="n">rf00</span><span class="p">)</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+    <span class="n">diffphase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">CCmax</span><span class="p">)</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">error</span><span class="p">,</span> <span class="n">diffphase</span><span class="p">,</span> <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span><span class="p">]</span>
+
+    <span class="n">Nc</span><span class="p">,</span> <span class="n">Nr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">Nc</span><span class="p">,</span> <span class="n">Nr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">Nc</span><span class="p">,</span> <span class="n">Nr</span><span class="p">,</span> <span class="n">peak_map</span></div>
+
+
+<div class="viewcode-block" id="dftups"><a class="viewcode-back" href="../../src.html#src.ripoc.dftups">[docs]</a><span class="k">def</span> <span class="nf">dftups</span><span class="p">(</span><span class="n">in_arr</span><span class="p">,</span> <span class="n">nor</span><span class="p">,</span> <span class="n">noc</span><span class="p">,</span> <span class="n">usfac</span><span class="p">,</span> <span class="n">roff</span><span class="p">,</span> <span class="n">coff</span><span class="p">):</span>
+
+    <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">in_arr</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># Compute kernels and obtain DFT by matrix products</span>
+    <span class="n">kernc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="p">(</span><span class="n">nc</span><span class="o">*</span><span class="n">usfac</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nc</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">nc</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noc</span><span class="p">)</span> <span class="o">-</span> <span class="n">coff</span><span class="p">))</span>
+    <span class="n">kernr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="p">(</span><span class="n">nr</span><span class="o">*</span><span class="n">usfac</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nor</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">roff</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nr</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">nr</span><span class="o">/</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kernr</span><span class="p">,</span> <span class="n">in_arr</span><span class="p">),</span> <span class="n">kernc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="FTpad"><a class="viewcode-back" href="../../src.html#src.ripoc.FTpad">[docs]</a><span class="k">def</span> <span class="nf">FTpad</span><span class="p">(</span><span class="n">imFT</span><span class="p">,</span> <span class="n">outsize</span><span class="p">):</span>
+
+    <span class="n">Nin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">imFT</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">Nout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">outsize</span><span class="p">)</span>
+    <span class="n">imFT</span> <span class="o">=</span> <span class="n">fftshift</span><span class="p">(</span><span class="n">imFT</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">Nin</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">imFTout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">outsize</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;complex64&#39;</span><span class="p">)</span>
+    <span class="n">centerout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">Nout</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">cenout_cen</span> <span class="o">=</span> <span class="p">(</span><span class="n">centerout</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">imFTout</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">cenout_cen</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cenout_cen</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">Nin</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="nb">slice</span><span class="p">(</span><span class="n">cenout_cen</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cenout_cen</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">Nin</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">imFT</span>
+    <span class="n">imFTout</span> <span class="o">=</span> <span class="n">ifftshift</span><span class="p">(</span><span class="n">imFTout</span><span class="p">)</span><span class="o">*</span><span class="n">Nout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">Nout</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">Nin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">Nin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">imFTout</span></div>
+
+
+<div class="viewcode-block" id="logpolar_module"><a class="viewcode-back" href="../../src.html#src.ripoc.logpolar_module">[docs]</a><span class="k">def</span> <span class="nf">logpolar_module</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">mag_scale</span><span class="p">):</span>
+
+    <span class="n">row</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">col</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">hrow</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">hcol</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">col</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># hanning window</span>
+    <span class="n">hy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="n">hx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="n">hw</span> <span class="o">=</span> <span class="n">hy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">hx</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="n">hw</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="n">hw</span>
+
+    <span class="c1"># fft</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">fftshift</span><span class="p">(</span><span class="n">fft2</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">fftshift</span><span class="p">(</span><span class="n">fft2</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+
+    <span class="c1"># highpass filter</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="o">/</span><span class="n">row</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">/</span><span class="n">col</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">X1</span><span class="o">*</span><span class="n">X2</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">X</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.0</span><span class="o">-</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">H</span> <span class="o">*</span> <span class="n">F</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">H</span> <span class="o">*</span> <span class="n">G</span>
+
+    <span class="c1"># Log-Polar transform</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <span class="n">FLP</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">logPolar</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">mag_scale</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+    <span class="n">GLP</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">logPolar</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">mag_scale</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+
+    <span class="c1"># roll and slice</span>
+    <span class="n">FLP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">FLP</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">hcol</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">GLP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">GLP</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">hcol</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">FLP</span> <span class="o">=</span> <span class="n">FLP</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hrow</span><span class="p">)),</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hcol</span><span class="p">))]</span>
+    <span class="n">GLP</span> <span class="o">=</span> <span class="n">GLP</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hrow</span><span class="p">)),</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hcol</span><span class="p">))]</span>
+
+    <span class="k">return</span> <span class="n">FLP</span><span class="p">,</span> <span class="n">GLP</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, sUeharaE4
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -18,8 +18,6 @@ extra_args['tab'] = '\t'
 detect_logger_cls = modify_logger.ModifyLogger()
 logger = detect_logger_cls.create_logger(__name__, INFO)
 
-CONFIG_PATH = 'conf/detect.yml'
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像の差分抽出するスクリプト.' +
@@ -57,6 +55,8 @@ def parse_args():
     # Debug log を出力するか
     parser.add_argument('--debug', type=strtobool,
                         help='debug log をコンソールに出力する場合はTrue.出力する場合進捗表示が崩れる.')
+    parser.add_argument('--conf_path', type=str, default='conf/detect.yml',
+                        help='設定ファイルのパス.デフォルトはconf/detect.yml.')
 
     args = parser.parse_args()
 
@@ -66,6 +66,7 @@ def parse_args():
 def check_config(config):
     """
     設定値の整合性チェック.
+
     Parameters
     ----------
     config :
@@ -98,11 +99,13 @@ def check_config(config):
     return True
 
 
-if __name__ == '__main__':
+def main():
+    global logger
     # 入力チェック(型までは見ない)
     args = parse_args()
-    config = util.read_config(CONFIG_PATH)
-    config = util.set_config(config, args)
+    config = util.get_config(args)
+    if config is None:
+        sys.exit(1)
     valid_input = check_config(config)
     if not valid_input:
         sys.exit(1)
@@ -156,7 +159,6 @@ if __name__ == '__main__':
         # 矩形領域の抽出
         contours, hierarchy = cv2.findContours(img_masked_dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         # 1辺が小さすぎる矩形の除外
-        min_area = DROP_MIN_LENGTH
         large_contours = []
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
@@ -180,8 +182,10 @@ if __name__ == '__main__':
             output_img_path = os.path.join(OUTPUT_DIR, output_file_name + img_type)
             for cnt in large_contours:
                 x, y, w, h = cv2.boundingRect(cnt)
-                written_img_rectangle = cv2.rectangle(pair_img,
-                                                      (x, y), (x + w, y + h),
-                                                      (0, 255, 0), 5)
+                cv2.rectangle(pair_img, (x, y), (x + w, y + h), (0, 255, 0), 5)
             cv2.imwrite(output_img_path, pair_img)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
+
+
+if __name__ == '__main__':
+    main()

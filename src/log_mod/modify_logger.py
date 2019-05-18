@@ -4,15 +4,61 @@ loggers = {}
 
 
 class ModifyLogger:
+    """
+    shift_mod_detector の共通logger.
+
+    Attributes
+    ----------
+
+    """
+
+    @classmethod
+    def setLevelUtil(cls, logger, level):
+        """
+        loggerとhandlerに同じレベルを設定する.
+
+        Parameters
+        ----------
+        logger : logging.Logger
+            レベルを設定したいlogger.
+        level : int
+            設定したいレベル.
+
+        Returns
+        -------
+        logger : logging.Logger
+            レベルを設定したlogger.
+        """
+        logger.setLevel(level)
+        for handler in logger.handlers:
+            handler.setLevel(level)
+        return logger
 
     @classmethod
     def create_logger(cls, name=None, log_level=INFO):
+        """
+        loggerとを生成する.
+
+        Parameters
+        ----------
+        name : str
+            loggerのNamespase用文字列.
+        level : int
+            設定したいレベル.
+
+        Returns
+        -------
+        logger : logging.Logger
+            生成したlogger.
+        """
         global loggers
         if name is None:
             name = __name__
 
         if loggers.get(name):
-            return loggers.get(name)
+            logger = loggers.get(name)
+            logger = cls.setLevelUtil(logger, log_level)
+            return logger
 
         handler = StreamHandler()
         formatter = \
@@ -24,11 +70,4 @@ class ModifyLogger:
         handler.setLevel(log_level)
         logger.addHandler(handler)
         loggers[name] = logger
-        return logger
-
-    @classmethod
-    def setLevelUtil(cls, logger, level):
-        logger.setLevel(level)
-        for handler in logger.handlers:
-            handler.setLevel(level)
         return logger

@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>src.shift_modification &mdash; shift_mod_detector  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> shift_mod_detector
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">shift_mod_detector</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>src.shift_modification</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for src.shift_modification</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">logging</span> <span class="k">import</span> <span class="n">INFO</span><span class="p">,</span> <span class="n">DEBUG</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">distutils.util</span> <span class="k">import</span> <span class="n">strtobool</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">isfile</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">ripoc</span>
+<span class="kn">from</span> <span class="nn">log_mod</span> <span class="k">import</span> <span class="n">modify_logger</span>
+<span class="c1"># ログの追加フォーマット</span>
+<span class="n">extra_args</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">extra_args</span><span class="p">[</span><span class="s1">&#39;tab&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span>
+
+<span class="n">modify_logger_cls</span> <span class="o">=</span> <span class="n">modify_logger</span><span class="o">.</span><span class="n">ModifyLogger</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">modify_logger_cls</span><span class="o">.</span><span class="n">create_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">INFO</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../src.html#src.shift_modification.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;テンプレート画像と入力画像のズレを修正するスクリプト.&#39;</span><span class="p">)</span>
+    <span class="c1"># 入力画像と出力先</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--template_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;テンプレート画像のパス.ズレ修正するための基準画像.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pair_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;ズレを修正する画像のパス.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--output_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;ズレ修正した画像の出力先.&#39;</span><span class="p">)</span>
+    <span class="c1"># ズレ修正でディレクトリを指定するか</span>
+    <span class="c1"># TODO 将来的にはサブコマンドで実装してほしい</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--modify_multi&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">strtobool</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;ズレ修正対象を1枚の画像ではなくディレクトリにする場合True.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--modify_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;ズレ修正する画像が格納されたディレクトリのパス.--template_path以外すべて修正対称にする&#39;</span><span class="p">)</span>
+    <span class="c1"># 比較画像を作成するか</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--create_diff&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">strtobool</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;ズレ修正前後とテンプレート画像を並べた比較画像を生成する場合True.&#39;</span><span class="p">)</span>
+    <span class="c1"># 閾値</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--threthold_BW&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mag_scale&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.&#39;</span><span class="p">)</span>
+    <span class="c1"># Debug log を出力するか</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">strtobool</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--conf_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;conf/shift.yml&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;設定ファイルのパス.デフォルトはconf/shift.yml.&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">args</span></div>
+
+
+<div class="viewcode-block" id="check_config"><a class="viewcode-back" href="../../src.html#src.shift_modification.check_config">[docs]</a><span class="k">def</span> <span class="nf">check_config</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    設定値の整合性チェック.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config :</span>
+<span class="sd">        設定ファイルと実行時引数を読み込んだdict</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    check_result : bool</span>
+<span class="sd">        整合性エラーが生じた時点でFalseが返却される.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template_path</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;template_path&#39;</span><span class="p">]</span>
+    <span class="n">pair_path</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;pair_path&#39;</span><span class="p">]</span>
+    <span class="n">modify_dir</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;modify_dir&#39;</span><span class="p">]</span>
+    <span class="n">modify_multi</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">][</span><span class="s1">&#39;modify_multi&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">template_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;テンプレート画像のパスを指定してください.例：--template_path input/template.jpg&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">template_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;テンプレート画像が存在しません.パスを確認してください :&#39;</span> <span class="o">+</span> <span class="n">template_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">pair_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">modify_multi</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;比較画像のパスを指定してください。またはディレクトリを指定してください.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;例1：--pair_path input/other.jpg&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;例2：--modify_multi --modify_dir input&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">modify_multi</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">modify_dir</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;modify_dirが存在しません :&#39;</span> <span class="o">+</span> <span class="n">modify_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># 問題なければTrueを返却する</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="rotate_modify"><a class="viewcode-back" href="../../src.html#src.shift_modification.rotate_modify">[docs]</a><span class="k">def</span> <span class="nf">rotate_modify</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">resize_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">mag_scale</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    回転方向のズレを修正する.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base_img : numpy.ndarray</span>
+<span class="sd">        テンプレート画像</span>
+<span class="sd">    pair_img : numpy.ndarray</span>
+<span class="sd">        修正対象画像</span>
+<span class="sd">    resize_shape : tuple</span>
+<span class="sd">        画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため</span>
+<span class="sd">        リサイズが必要.その際のサイズ.(512, 512)等.</span>
+<span class="sd">    mag_scale : int</span>
+<span class="sd">        RIPOCする際のmagnitude_scale.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    modified_img : numpy.ndarray</span>
+<span class="sd">        回転方向のズレを修正した画像.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)</span>
+    <span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">resize_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">resize_shape</span><span class="p">)</span>
+    <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">hrow</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;resize_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">resize_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+    <span class="c1"># 対数極座標変換と回転・拡大の推定</span>
+    <span class="n">base_log_poler</span><span class="p">,</span> <span class="n">pair_log_poler</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">logpolar_module</span><span class="p">(</span><span class="n">resize_base_img</span><span class="p">,</span> <span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">mag_scale</span><span class="p">)</span>
+
+    <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">fft_coreg_LP</span><span class="p">(</span><span class="n">base_log_poler</span><span class="p">,</span> <span class="n">pair_log_poler</span><span class="p">)</span>
+    <span class="n">angle_est</span> <span class="o">=</span> <span class="o">-</span> <span class="n">row_shift</span> <span class="o">/</span> <span class="p">(</span><span class="n">hrow</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span>
+    <span class="n">scale_est</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">col_shift</span> <span class="o">/</span> <span class="n">mag_scale</span>
+
+    <span class="c1"># rotate slave</span>
+    <span class="n">rot_matrix</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getRotationMatrix2D</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">angle_est</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">resize_pair_img</span><span class="p">,</span> <span class="n">rot_matrix</span><span class="p">,</span>
+                             <span class="n">resize_pair_img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+    <span class="c1"># scale slave</span>
+    <span class="n">g_coreg_tmp</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">g_coreg</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">scale_est</span><span class="p">,</span>
+                             <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LANCZOS4</span><span class="p">)</span>
+    <span class="n">row_coreg_tmp</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">col_coreg_tmp</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">row_coreg_tmp</span> <span class="o">==</span> <span class="n">row</span><span class="p">:</span>
+        <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span>
+    <span class="k">elif</span> <span class="n">row_coreg_tmp</span> <span class="o">&gt;</span> <span class="n">row</span><span class="p">:</span>
+        <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">col</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">g_coreg</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">row_coreg_tmp</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">col_coreg_tmp</span><span class="p">)]</span> <span class="o">=</span> <span class="n">g_coreg_tmp</span>
+
+    <span class="c1"># estimate translation &amp; translate slave</span>
+    <span class="n">row_shift</span><span class="p">,</span> <span class="n">col_shift</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">g_coreg</span> <span class="o">=</span> <span class="n">ripoc</span><span class="o">.</span><span class="n">fft_coreg_trans</span><span class="p">(</span><span class="n">resize_base_img</span><span class="p">,</span> <span class="n">g_coreg</span><span class="p">)</span>
+    <span class="c1"># check estimates</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;RIPOC Results&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;rotate angle : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">angle_est</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;scale : &#39;</span>        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">scale_est</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+    <span class="n">tmp_height</span><span class="p">,</span> <span class="n">tmp_width</span> <span class="o">=</span> <span class="n">pair_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">tmp_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">trans</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getRotationMatrix2D</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">angle_est</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="n">tmp_width</span><span class="p">,</span> <span class="n">tmp_height</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">modify_img</span></div>
+
+
+<div class="viewcode-block" id="shift_modify"><a class="viewcode-back" href="../../src.html#src.shift_modification.shift_modify">[docs]</a><span class="k">def</span> <span class="nf">shift_modify</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    水平垂直方向のズレを修正する.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base_img : numpy.ndarray</span>
+<span class="sd">        テンプレート画像</span>
+<span class="sd">    pair_img : numpy.ndarray</span>
+<span class="sd">        テンプレート画像</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    modified_img : numpy.ndarray</span>
+<span class="sd">        水平垂直方向のズレを修正した画像.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">pair_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">shift</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">phaseCorrelate</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">)</span>
+    <span class="n">x_shift</span><span class="p">,</span> <span class="n">y_shift</span> <span class="o">=</span> <span class="n">shift</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;POC Results&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;x_shift : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_shift</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;y_shift : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_shift</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+    <span class="n">trans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">x_shift</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">y_shift</span><span class="p">]])</span>
+    <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+    <span class="n">modify_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">exchange_black_white</span><span class="p">(</span><span class="n">modify_img</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">modify_img</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../src.html#src.shift_modification.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">logger</span>
+    <span class="c1"># 入力チェック(型までは見ない)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">valid_input</span> <span class="o">=</span> <span class="n">check_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_input</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">][</span><span class="s1">&#39;debug&#39;</span><span class="p">]:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">modify_logger_cls</span><span class="o">.</span><span class="n">setLevelUtil</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">DEBUG</span><span class="p">)</span>
+
+    <span class="n">BASE_IMG</span>     <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;template_path&#39;</span><span class="p">]</span>
+    <span class="n">OUTPUT_DIR</span>   <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span>
+    <span class="n">RESIZE_LEN</span>   <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">MAG_SCALE</span>    <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;mag_scale&#39;</span><span class="p">]</span>
+    <span class="n">RESIZE_SHAPE</span> <span class="o">=</span> <span class="p">(</span><span class="n">RESIZE_LEN</span><span class="p">,</span> <span class="n">RESIZE_LEN</span><span class="p">)</span>
+
+    <span class="n">DIR_SEP</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+
+    <span class="n">MODIFY_MULTI</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">][</span><span class="s1">&#39;modify_multi&#39;</span><span class="p">]</span>
+    <span class="n">MODIFY_DIR</span>   <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;modify_dir&#39;</span><span class="p">]</span>
+    <span class="n">THRETHOLD_BW</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;threthold_BW&#39;</span><span class="p">]</span>
+    <span class="n">PAIR_PATH</span>    <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;pair_path&#39;</span><span class="p">]</span>
+    <span class="n">CREATE_DIFF</span>  <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">][</span><span class="s1">&#39;create_diff&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">OUTPUT_DIR</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">OUTPUT_DIR</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">MODIFY_MULTI</span><span class="p">:</span>
+        <span class="n">pair_img_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">MODIFY_DIR</span><span class="p">)</span>
+        <span class="n">pair_img_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pair_img_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">BASE_IMG</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">DIR_SEP</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+        <span class="n">pair_img_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODIFY_DIR</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">pair_img_list</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pair_img_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">PAIR_PATH</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;pair_img_list : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">pair_img_list</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">pair_img_path</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">pair_img_list</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;target_img : &#39;</span> <span class="o">+</span> <span class="n">pair_img_path</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+        <span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">read_base_pair_imgs</span><span class="p">(</span><span class="n">BASE_IMG</span><span class="p">,</span> <span class="n">pair_img_path</span><span class="p">,</span> <span class="n">THRETHOLD_BW</span><span class="p">)</span>
+        <span class="n">default_height</span><span class="p">,</span> <span class="n">default_width</span> <span class="o">=</span> <span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;default_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+        <span class="n">expand_base_img</span><span class="p">,</span> <span class="n">expand_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">expand_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">)</span>
+        <span class="n">expand_base_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">img2float64</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">)</span>
+        <span class="n">expand_pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">img2float64</span><span class="p">(</span><span class="n">expand_pair_img</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;expand_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">expand_base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+        <span class="c1"># 回転方向の修正</span>
+        <span class="n">rotate_expand_pair_img</span> <span class="o">=</span> <span class="n">rotate_modify</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">,</span> <span class="n">expand_pair_img</span><span class="p">,</span>
+                                               <span class="n">RESIZE_SHAPE</span><span class="p">,</span> <span class="n">MAG_SCALE</span><span class="p">)</span>
+        <span class="c1"># 回転修正したのでPOC</span>
+        <span class="n">modified_img</span> <span class="o">=</span> <span class="n">shift_modify</span><span class="p">(</span><span class="n">expand_base_img</span><span class="p">,</span> <span class="n">rotate_expand_pair_img</span><span class="p">)</span>
+        <span class="n">modified_img</span> <span class="o">=</span> <span class="n">modified_img</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">default_height</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">default_width</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;modified_size : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">modified_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+
+        <span class="n">output_img_name</span><span class="p">,</span> <span class="n">output_img_ext</span> <span class="o">=</span> <span class="n">pair_img_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">DIR_SEP</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">output_img_ext</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">output_img_ext</span>
+        <span class="n">output_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DIR</span><span class="p">,</span> <span class="n">output_img_name</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;output_path : &#39;</span> <span class="o">+</span> <span class="n">output_img_path</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">output_img_path</span><span class="p">,</span> <span class="n">modified_img</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">CREATE_DIFF</span><span class="p">:</span>
+            <span class="n">diff_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DIR</span><span class="p">,</span> <span class="s1">&#39;diff&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">diff_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">diff_dir</span><span class="p">)</span>
+            <span class="c1"># 一度形式を変更してしまった画像をもとに戻す</span>
+            <span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">read_base_pair_imgs</span><span class="p">(</span><span class="n">BASE_IMG</span><span class="p">,</span> <span class="n">pair_img_path</span><span class="p">,</span> <span class="n">THRETHOLD_BW</span><span class="p">)</span>
+            <span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">exchange_black_white</span><span class="p">(</span><span class="n">base_img</span><span class="p">),</span> <span class="n">util</span><span class="o">.</span><span class="n">exchange_black_white</span><span class="p">(</span><span class="n">pair_img</span><span class="p">)</span>
+            <span class="n">modified_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">modified_img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;hconcat 3 imgs : &#39;</span> <span class="o">+</span>
+                         <span class="nb">str</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">modified_img</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                         <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span>
+            <span class="n">show_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">hconcat</span><span class="p">([</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">modified_img</span><span class="p">])</span>
+            <span class="c1"># カラー読み込み用</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">,</span> <span class="n">show_img</span><span class="p">)</span>
+            <span class="n">show_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">)</span>
+            <span class="c1"># 罫線追加</span>
+            <span class="n">show_img</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">write_ruled_line</span><span class="p">(</span><span class="n">show_img</span><span class="p">)</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">show_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">show_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">show_img</span><span class="p">,</span> <span class="n">dsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">diff_dir</span><span class="p">,</span> <span class="n">output_img_name</span> <span class="o">+</span> <span class="n">output_img_ext</span><span class="p">),</span> <span class="n">show_img</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;your inputs : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra_args</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, sUeharaE4
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
