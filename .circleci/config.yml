@@ -3,15 +3,10 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.7.3
+    environment:
+      PYTHONPATH: /home/circleci/project/
     steps:
       - checkout
-      - run:
-          name: Setup custom environment variables
-          command: |
-            echo $(export PYTHONPATH=${PWD}/src) >> $BASH_ENV
-            echo ${PYTHONPATH}
-            export PYTHONPATH=${PWD}/src
-            echo ${PYTHONPATH}
       - run:
           name: install dependencies
           command: |
