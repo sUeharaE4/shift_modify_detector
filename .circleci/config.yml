@@ -10,6 +10,8 @@ jobs:
           command: |
             echo $(export PYTHONPATH=${PWD}/src) >> $BASH_ENV
             echo ${PYTHONPATH}
+            export PYTHONPATH=${PWD}/src
+            echo ${PYTHONPATH}
       - run:
           name: install dependencies
           command: |
@@ -18,6 +20,7 @@ jobs:
             pip install pytest
             pip install pytest-cov
             pip install -r requirements.txt
+            echo ${PYTHONPATH}
       - run:
           name: run test
           command: |
