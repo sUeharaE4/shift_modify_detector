@@ -25,6 +25,7 @@ jobs:
           name: run test
           command: |
             . ../venv/bin/activate
+            echo ${PYTHONPATH}
             pytest -v -l
           working_directory: tests/
       - store-test-results:
