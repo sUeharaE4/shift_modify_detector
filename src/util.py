@@ -56,7 +56,6 @@ def expand_power2(img, background_color=None):
         1辺の長さが2の累乗にした画像
     """
     height, width = img.shape[:2]
-    assert height == width, '先に正方形にしてください'
     if background_color is None:
         background_color = [255 for _ in range(len(img.shape))]
     expand_img = img.copy()
