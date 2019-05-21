@@ -22,7 +22,9 @@ import shift_modification
     ('conf/shift_default.yml', {}),
 ])
 def test_check_config(conf_path, input_args):
-    config = util.read_config(conf_path)
+    args = argparse.Namespace()
+    args.conf_path = conf_path
+    config = util.get_config(args)
     test_args = argparse.Namespace()
     test_args.__dict__ = input_args
     config_update = util.set_config(config, test_args)
