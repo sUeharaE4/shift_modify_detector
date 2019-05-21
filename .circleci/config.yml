@@ -15,12 +15,10 @@ jobs:
             pip install pytest
             pip install pytest-cov
             pip install -r requirements.txt
-            echo ${PYTHONPATH}
       - run:
           name: run test
           command: |
             . ../venv/bin/activate
-            echo ${PYTHONPATH}
             pytest -v -l
           working_directory: tests/
       - store-test-results:
