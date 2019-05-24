@@ -1,5 +1,5 @@
 image: python:3.7
 tasks:
 - command: "pip3 install -r requirements.txt"
-- command: "pip3 install flake8 pycodestyle pytest"
+- command: "pip3 install flake8 pycodestyle pytest pytest-cov pytest-mock"
 - command: "export PYTHONPATH=/workspace/shift_modify_detector/src"
