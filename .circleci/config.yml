@@ -19,7 +19,7 @@ jobs:
           name: run test
           command: |
             . ../venv/bin/activate
-            pytest -v -l
+            pytest -v -l --durations=0
           working_directory: tests/
       - store-test-results:
           path: test-reports
