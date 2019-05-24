@@ -17,14 +17,6 @@ import util
 TEST_TMP_DIR = 'test_tmp'
 
 
-@pytest.fixture(scope='function', autouse=True)
-def need_work_dir():
-    if not os.path.exists(TEST_TMP_DIR):
-        os.mkdir(TEST_TMP_DIR)
-    yield
-    shutil.rmtree(TEST_TMP_DIR)
-
-
 def test_expand2square_no_backcolor():
     img = np.asarray([[0, 0, 0],
                       [0, 0, 0]])
