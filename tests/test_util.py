@@ -1,9 +1,11 @@
 import numpy as np
+import pandas as pd
 import argparse
 import pytest
 import os
 import json
 import cv2
+import shutil
 
 import sys
 sys.path.append(os.getcwd())
@@ -11,6 +13,16 @@ sys.path.append('../src/')
 sys.path.append('../src/log_mod/')
 
 import util
+
+TEST_TMP_DIR = 'test_tmp'
+
+
+@pytest.fixture(scope='function', autouse=True)
+def need_work_dir():
+    if not os.path.exists(TEST_TMP_DIR):
+        os.mkdir(TEST_TMP_DIR)
+    yield
+    shutil.rmtree(TEST_TMP_DIR)
 
 
 def test_expand2square_no_backcolor():
@@ -118,3 +130,28 @@ def test_img2float64(input_img):
     float_img = util.img2float64(img)
     assert float_img.dtype == np.float64
     assert img.shape == float_img.shape
+
+
+@pytest.mark.parametrize('input_dir, save_size', [
+    ('input', False),
+    ('input', True),
+])
+def test_uniform_img_size(need_work_dir, input_dir, save_size):
+    util.uniform_img_size(input_dir, TEST_TMP_DIR, save_size)
+    img_name_list = os.listdir(TEST_TMP_DIR)
+    if save_size:
+        assert 'size.csv' in img_name_list
+        img_name_list.remove('size.csv')
+
+    img_paths = [os.path.join(TEST_TMP_DIR, img_name)
+                 for img_name in img_name_list]
+    img_shape_list = [cv2.imread(img_path).shape for img_path in img_paths]
+    img_shape_set = set(img_shape_list)
+    uniformed_size = img_shape_set.pop()
+    # 全サイズが同じであればsetの中身は1。popしたから0になるはず。
+    assert len(img_shape_set) == 0
+    input_paths = [os.path.join(input_dir, img_name)
+                   for img_name in img_name_list]
+    df = pd.DataFrame([cv2.imread(img_path).shape for img_path in input_paths])
+    df.columns = ['width', 'height', 'ch']
+    assert uniformed_size == (df['width'].max(), df['height'].max(), 3)
