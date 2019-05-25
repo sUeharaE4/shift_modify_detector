@@ -49,7 +49,7 @@ def test_main(mocker, conf_path, input_args):
     args.output_dir = TEST_TMP_DIR
     args.debug = False
     config = util.get_config(args)
-
+    # 実行時引数を渡す代わりに上記argsを渡す
     mocker.patch('shift_modification.parse_args').return_value = args
     shift_modification.main()
     output_dir = config['output']['output_dir']

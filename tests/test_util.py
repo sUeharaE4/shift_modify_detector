@@ -140,7 +140,7 @@ def test_uniform_img_size(need_work_dir, input_dir, save_size):
     img_shape_list = [cv2.imread(img_path).shape for img_path in img_paths]
     img_shape_set = set(img_shape_list)
     uniformed_size = img_shape_set.pop()
-    # 全サイズが同じであればsetの中身は1。popしたから0になるはず。
+    # 全サイズが同じであればsetの中身は1個。popしたから0になるはず。
     assert len(img_shape_set) == 0
     input_paths = [os.path.join(input_dir, img_name)
                    for img_name in img_name_list]
