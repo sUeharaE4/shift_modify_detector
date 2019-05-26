@@ -90,12 +90,12 @@ def check_config(config):
     threthold_B = config['options']['threthold_B']
     if img_path is None and not classify_multi:
         print('画像のパスを指定してください.'
-              '例：--img_path unknown_img/questionnaire_001.jpg')
+              '例：--img_path unknown/questionnaire_001.jpg')
         return False
     if score_path is not None and not isfile(score_path):
         print('指定した計算結果がありません.パスを確認してください：' + score_path)
         return False
-    if not isfile(registered_dir):
+    if not os.path.isdir(registered_dir):
         print('事前に画像をディレクトリ分けしたディレクトリがありません.'
               'パスを確認してください :' + registered_dir)
         return False
@@ -205,7 +205,7 @@ def get_match_points(unknown_path, known_path, match_dict):
     return ret
 
 
-def write_result(score_dict, output_path, use_mean=False, prunt_ranks=3):
+def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
     """
     比較結果を出力する.
 
@@ -222,10 +222,13 @@ def write_result(score_dict, output_path, use_mean=False, prunt_ranks=3):
 
     """
     def calc_mean(score_dict):
+        # TODO 平均を求める
         return score_dict
 
     for img_path in score_dict:
-        topN = sorted(score_dict[img_path].items(), key=lambda x: x[1])[0:3]
+        diff_scores = score_dict[img_path].items()
+        ranks = max(print_ranks, len(diff_scores))
+        topN = sorted(diff_scores, key=lambda x: x[1])[0:ranks]
         for i in range(len(topN)):
             print(str(topN[i][1]) + ' : ' + topN[i][0])
 
@@ -253,11 +256,11 @@ def main():
     CLASSIFY_MULTI = config['mode']['classify_multi']
 
     output_dir = os.path.dirname(OUTPUT_PATH)
-    if not os.path.exists(output_dir):
+    if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
     if SAVE_SCORE:
         score_dir = os.path.dirname(SAVE_PATH)
-        if not os.path.exists(score_dir):
+        if DIR_SEP in score_dir and not os.path.exists(score_dir):
             os.makedirs(score_dir)
     if CLASSIFY_MULTI:
         CLASSIFY_DIR = config['mode']['classify_dir']
@@ -270,7 +273,7 @@ def main():
             for img in tmp_img_list:
                 unknown_img_list.append(os.path.join(tmp_img_dir, img))
     else:
-        unknown_img_list = [config['input']['image_path']]
+        unknown_img_list = [config['input']['img_path']]
     if SCORE_PATH is not None:
         match_dict = read_pre_calc_score(SCORE_PATH)
     else:
@@ -291,6 +294,14 @@ def main():
         match_dict[unknown_img] = get_match_points_dict
         cnt = cnt + 1
         print('end : ' + str(cnt) + '/' + str(len(unknown_img_list)))
+    if DIR_SEP in output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        # TODO csv出力
+    if SAVE_SCORE:
+        # dict no pickle化
+        score_dir = os.path.dirname(SAVE_PATH)
+        if DIR_SEP in score_dir and not os.path.exists(score_dir):
+            os.makedirs(score_dir)
 
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 

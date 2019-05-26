@@ -1,0 +1,37 @@
+# RIPOCを用いたズレ修正の設定
+
+### 動作設定
+mode:
+  # 修正をディレクトリ単位で実行するか 特定のファイルだけ修正したい場合はFalse
+  classify_multi: False
+  # ズレ修正前後とテンプレート画像を並べた比較画像を生成するか
+  create_diff: True
+  # debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.
+  debug: True
+
+### 入力ファイルの設定値
+input:
+  # テンプレート画像のパス
+  img_path: 'images/unknown/questionnaire_001.jpg'
+  # ズレ修正画像のパス(ディレクトリ単位で修正する場合は不要)
+  registered_dir: 'images/known/'
+  # ズレ修正画像のディレクトリ. テンプレート画像は自動的に除外するので一緒に入っていてもよい.
+  score_path:
+  classify_dir:
+
+
+### 修正画像の出力先
+output:
+  # 出力先ディレクトリ
+  output_path: 'result.csv'
+  save_score: True
+  save_path: 'score.pkl'
+
+### オプション
+options:
+  change_bright: False
+  # 白と見なす画素値.1〜255で通常は200以上。灰色の領域があれば150等調整してください.
+  threthold_W: 200
+  threthold_B: 50
+  # RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.
+  mag_scale: 100
