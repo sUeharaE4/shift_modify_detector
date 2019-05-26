@@ -329,7 +329,8 @@ def modify_path_in_config(config):
     other_sep_dir = sep_change_dict[sep_dir]
     for conf_type in conf_type_has_path:
         for key in config[conf_type].keys():
-            if config[conf_type][key] is not None:
+            if config[conf_type][key] is not None and \
+               type(config[conf_type][key]) is str:
                 config[conf_type][key] = config[conf_type][key].replace(
                                                 other_sep_dir, sep_dir)
     return config
