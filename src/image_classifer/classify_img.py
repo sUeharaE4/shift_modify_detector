@@ -10,6 +10,7 @@ from tqdm import tqdm
 import pickle
 import copy
 import traceback
+import pandas as pd
 
 import util
 from log_mod import modify_logger
@@ -296,12 +297,20 @@ def main():
         print('end : ' + str(cnt) + '/' + str(len(unknown_img_list)))
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        # TODO csv出力
+    # TODO csv出力
+    result_df = pd.DataFrame(columns=['pair_img', 'score', 'img'])
+    for img in match_dict.keys():
+        tmp_df = pd.DataFrame(match_dict[img])
+        tmp_df['img'] = img
+        result_df = pd.concat([result_df, tmp_df])
+    result_df = result_df.loc[:, ['img', 'pair_img', 'score']]
+    result_df.to_csv(OUTPUT_PATH, index=False, header=True)
     if SAVE_SCORE:
         # dict no pickle化
         score_dir = os.path.dirname(SAVE_PATH)
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
             os.makedirs(score_dir)
+        dump_score(SAVE_PATH, match_dict)
 
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
