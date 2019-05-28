@@ -174,7 +174,7 @@ def dump_score(score_path, score_dict):
         pickle.dump(score_dict, score_f)
 
 
-def get_kp_and_des(img):
+def __get_kp_and_des(img):
     global detector
     (kp, des) = detector.detectAndCompute(img, None)
     return (kp, des)
@@ -194,8 +194,8 @@ def get_match_points(unknown_path, known_path, match_dict):
         return 10000000
 
     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-    (target_kp, target_des) = get_kp_and_des(i1)
-    (comparing_kp, comparing_des) = get_kp_and_des(i2)
+    (target_kp, target_des) = __get_kp_and_des(i1)
+    (comparing_kp, comparing_des) = __get_kp_and_des(i2)
     try:
         matches = bf.match(target_des, comparing_des)
         dist = [m.distance for m in matches]
