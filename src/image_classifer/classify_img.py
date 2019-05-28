@@ -11,6 +11,7 @@ import pickle
 import copy
 import traceback
 import pandas as pd
+import glob
 
 import util
 from log_mod import modify_logger
@@ -253,6 +254,7 @@ def main():
     SAVE_PATH = config['output']['save_path']
     OUTPUT_PATH = config['output']['output_path']
     SCORE_PATH = config['input']['score_path']
+    REGISTERED_DIR = config['input']['registered_dir']
 
     CLASSIFY_MULTI = config['mode']['classify_multi']
 
@@ -264,15 +266,11 @@ def main():
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
             os.makedirs(score_dir)
     if CLASSIFY_MULTI:
-        CLASSIFY_DIR = config['mode']['classify_dir']
-        img_dir_list = os.listdir(CLASSIFY_DIR)
+        CLASSIFY_DIR = config['input']['classify_dir']
         # TODO 明らかに違うディレクトリを除外するオプションができたら処理を入れる
         unknown_img_list = []
-        for img_dir in img_dir_list:
-            tmp_img_dir = os.path.join(CLASSIFY_DIR, img_dir)
-            tmp_img_list = os.listdir(tmp_img_dir)
-            for img in tmp_img_list:
-                unknown_img_list.append(os.path.join(tmp_img_dir, img))
+        for ext in ['jpg', 'png']:
+            unknown_img_list.extend(glob.glob(CLASSIFY_DIR + DIR_SEP + '**' + DIR_SEP + '*.' + ext, recursive=True))
     else:
         unknown_img_list = [config['input']['img_path']]
     if SCORE_PATH is not None:
@@ -286,21 +284,27 @@ def main():
     cnt = 0
     for unknown_img in tqdm(unknown_img_list):
         logger.debug('target_img : ' + unknown_img, extra=extra_args)
-        check_diff_list = copy.deepcopy(unknown_img_list)
-        check_diff_list.remove(unknown_img)
+        check_diff_list = []
+        for ext in ['jpg', 'png']:
+            check_diff_list.extend(glob.glob(REGISTERED_DIR + DIR_SEP + '**' + DIR_SEP + '*.' + ext, recursive=True))
+        logger.debug('check_diff_list : ' + str(check_diff_list), extra=extra_args)
         get_match_points_dict = {
             other_img_path: get_match_points(unknown_img, other_img_path, match_dict)
             for other_img_path in tqdm(check_diff_list)
         }
         match_dict[unknown_img] = get_match_points_dict
         cnt = cnt + 1
+        logger.debug('get_match_points_dict :' + str(get_match_points_dict), extra=extra_args)
         print('end : ' + str(cnt) + '/' + str(len(unknown_img_list)))
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
     # TODO csv出力
+    logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
     result_df = pd.DataFrame(columns=['pair_img', 'score', 'img'])
     for img in match_dict.keys():
-        tmp_df = pd.DataFrame(match_dict[img])
+        logger.debug('match_dict[img] :' + str(match_dict[img]), extra=extra_args)
+        tmp_df = pd.DataFrame(list(match_dict[img].items()))
+        tmp_df.columns = ['pair_img', 'score']
         tmp_df['img'] = img
         result_df = pd.concat([result_df, tmp_df])
     result_df = result_df.loc[:, ['img', 'pair_img', 'score']]

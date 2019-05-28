@@ -3,7 +3,7 @@
 ### 動作設定
 mode:
   # 修正をディレクトリ単位で実行するか 特定のファイルだけ修正したい場合はFalse
-  classify_multi: False
+  classify_multi: True
   # ズレ修正前後とテンプレート画像を並べた比較画像を生成するか
   create_diff: True
   # debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.
@@ -17,7 +17,7 @@ input:
   registered_dir: 'images/known/'
   # ズレ修正画像のディレクトリ. テンプレート画像は自動的に除外するので一緒に入っていてもよい.
   score_path:
-  classify_dir:
+  classify_dir: 'images/unknown/'
 
 
 ### 修正画像の出力先
