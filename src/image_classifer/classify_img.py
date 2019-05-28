@@ -235,6 +235,25 @@ def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
             print(str(topN[i][1]) + ' : ' + topN[i][0])
 
 
+def find_img_recursive(find_dir, sep):
+    img_list = []
+    for ext in ['jpg', 'png', 'jpeg']:
+        img_list.extend(glob.glob(find_dir + sep + '**' + sep + '*.' + ext,
+                                  recursive=True))
+    return img_list
+
+
+def create_result_df(match_dict):
+    result_df = pd.DataFrame(columns=['pair_img', 'score', 'img'])
+    for img in match_dict.keys():
+        tmp_df = pd.DataFrame(list(match_dict[img].items()))
+        tmp_df.columns = ['pair_img', 'score']
+        tmp_df['img'] = img
+        result_df = pd.concat([result_df, tmp_df])
+    result_df = result_df.loc[:, ['img', 'pair_img', 'score']]
+    return result_df
+
+
 def main():
     global logger
     global DIR_SEP
@@ -268,9 +287,7 @@ def main():
     if CLASSIFY_MULTI:
         CLASSIFY_DIR = config['input']['classify_dir']
         # TODO 明らかに違うディレクトリを除外するオプションができたら処理を入れる
-        unknown_img_list = []
-        for ext in ['jpg', 'png']:
-            unknown_img_list.extend(glob.glob(CLASSIFY_DIR + DIR_SEP + '**' + DIR_SEP + '*.' + ext, recursive=True))
+        unknown_img_list = find_img_recursive(CLASSIFY_DIR, DIR_SEP)
     else:
         unknown_img_list = [config['input']['img_path']]
     if SCORE_PATH is not None:
@@ -278,36 +295,20 @@ def main():
     else:
         match_dict = {}
 
-    THRETHOLD_W = config['options']['threthold_W']
-    THRETHOLD_B = config['options']['threthold_B']
-
-    cnt = 0
     for unknown_img in tqdm(unknown_img_list):
-        check_diff_list = []
-        for ext in ['jpg', 'png']:
-            check_diff_list.extend(glob.glob(REGISTERED_DIR + DIR_SEP +
-                                             '**' + DIR_SEP + '*.' + ext,
-                                             recursive=True))
+        check_diff_list = find_img_recursive(REGISTERED_DIR, DIR_SEP)
         get_match_points_dict = {
             other_img_path: get_match_points(unknown_img, other_img_path, match_dict)
             for other_img_path in tqdm(check_diff_list)
         }
         match_dict[unknown_img] = get_match_points_dict
-        cnt = cnt + 1
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    # TODO csv出力
+
     logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
-    result_df = pd.DataFrame(columns=['pair_img', 'score', 'img'])
-    for img in match_dict.keys():
-        tmp_df = pd.DataFrame(list(match_dict[img].items()))
-        tmp_df.columns = ['pair_img', 'score']
-        tmp_df['img'] = img
-        result_df = pd.concat([result_df, tmp_df])
-    result_df = result_df.loc[:, ['img', 'pair_img', 'score']]
+    result_df = create_result_df(match_dict)
     result_df.to_csv(OUTPUT_PATH, index=False, header=True)
     if SAVE_SCORE:
-        # dict no pickle化
         score_dir = os.path.dirname(SAVE_PATH)
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
             os.makedirs(score_dir)
