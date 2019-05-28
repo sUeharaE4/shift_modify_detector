@@ -283,26 +283,23 @@ def main():
 
     cnt = 0
     for unknown_img in tqdm(unknown_img_list):
-        logger.debug('target_img : ' + unknown_img, extra=extra_args)
         check_diff_list = []
         for ext in ['jpg', 'png']:
-            check_diff_list.extend(glob.glob(REGISTERED_DIR + DIR_SEP + '**' + DIR_SEP + '*.' + ext, recursive=True))
-        logger.debug('check_diff_list : ' + str(check_diff_list), extra=extra_args)
+            check_diff_list.extend(glob.glob(REGISTERED_DIR + DIR_SEP +
+                                             '**' + DIR_SEP + '*.' + ext,
+                                             recursive=True))
         get_match_points_dict = {
             other_img_path: get_match_points(unknown_img, other_img_path, match_dict)
             for other_img_path in tqdm(check_diff_list)
         }
         match_dict[unknown_img] = get_match_points_dict
         cnt = cnt + 1
-        logger.debug('get_match_points_dict :' + str(get_match_points_dict), extra=extra_args)
-        print('end : ' + str(cnt) + '/' + str(len(unknown_img_list)))
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
     # TODO csv出力
     logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
     result_df = pd.DataFrame(columns=['pair_img', 'score', 'img'])
     for img in match_dict.keys():
-        logger.debug('match_dict[img] :' + str(match_dict[img]), extra=extra_args)
         tmp_df = pd.DataFrame(list(match_dict[img].items()))
         tmp_df.columns = ['pair_img', 'score']
         tmp_df['img'] = img
@@ -317,6 +314,7 @@ def main():
         dump_score(SAVE_PATH, match_dict)
 
     logger.debug('your inputs : ' + str(config), extra=extra_args)
+    logger.debug('check_diff_list : ' + str(check_diff_list), extra=extra_args)
 
 
 if __name__ == '__main__':
