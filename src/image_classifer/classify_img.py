@@ -221,6 +221,10 @@ def get_match_points(unknown_path, known_path, match_dict,
     # 計算済みでなければ仕方ない
     i1 = cv2.imread(unknown_path, cv2.IMREAD_GRAYSCALE)
     i2 = cv2.imread(known_path, cv2.IMREAD_GRAYSCALE)
+    if threthold_W is not None and threthold_B is not None:
+        chenge_bright(i1, threthold_W, threthold_B)
+        chenge_bright(i2, threthold_W, threthold_B)
+
     # サイズが違うなら比較しない
     if i1.shape != i2.shape:
         return 10000000
@@ -309,6 +313,13 @@ def main():
 
     CLASSIFY_MULTI = config['mode']['classify_multi']
 
+    if config['options']['change_bright']:
+        threthold_W = config['options']['threthold_W']
+        threthold_B = config['options']['threthold_B']
+    else:
+        threthold_W = None
+        threthold_B = None
+
     output_dir = os.path.dirname(OUTPUT_PATH)
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -330,8 +341,9 @@ def main():
     for unknown_img in tqdm(unknown_img_list):
         check_diff_list = find_img_recursive(REGISTERED_DIR, DIR_SEP)
         get_match_points_dict = {
-            other_img_path: get_match_points(unknown_img, other_img_path, match_dict)
-            for other_img_path in tqdm(check_diff_list)
+            other_img: get_match_points(unknown_img, other_img, match_dict,
+                                        threthold_W, threthold_B)
+            for other_img in tqdm(check_diff_list)
         }
         match_dict[unknown_img] = get_match_points_dict
     if DIR_SEP in output_dir and not os.path.exists(output_dir):
