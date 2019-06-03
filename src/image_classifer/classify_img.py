@@ -263,12 +263,21 @@ def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
         # TODO 平均を求める
         return score_dict
 
+    header = ['top_' + str(rank + 1) for rank in range(print_ranks)]
+    header.insert(0, 'img')
+    result_df = pd.DataFrame(columns=header)
     for img_path in score_dict:
         diff_scores = score_dict[img_path].items()
-        ranks = max(print_ranks, len(diff_scores))
+        ranks = min(print_ranks, len(diff_scores))
         topN = sorted(diff_scores, key=lambda x: x[1])[0:ranks]
-        for i in range(len(topN)):
-            print(str(topN[i][1]) + ' : ' + topN[i][0])
+        topN = [str(name_score) for name_score in topN]
+        # 比較対象が少ない場合は空文字を埋める
+        for _ in range(print_ranks - len(topN)):
+            topN.extend('')
+        topN.insert(0, img_path)
+        tmp_df = pd.DataFrame(topN, columns=header)
+        result_df = pd.concat([result_df, tmp_df])
+    result_df.to_csv(output_path, header=True, index=False)
 
 
 def find_img_recursive(find_dir, sep):
@@ -352,6 +361,7 @@ def main():
     logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
     result_df = create_result_df(match_dict)
     result_df.to_csv(OUTPUT_PATH, index=False, header=True)
+    # write_result(match_dict, OUTPUT_PATH, use_mean=False, print_ranks=3)
     if SAVE_SCORE:
         score_dir = os.path.dirname(SAVE_PATH)
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
