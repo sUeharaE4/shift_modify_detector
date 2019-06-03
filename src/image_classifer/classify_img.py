@@ -27,7 +27,7 @@ DIR_SEP = os.sep
 
 def parse_args():
     parser = argparse.ArgumentParser(description='入力画像が与えられたディレクトリ配下の'
-                                                  'どのディレクトリに属するか推定する.')
+                                                 'どのディレクトリに属するか推定する.')
     # 入力と出力先
     parser.add_argument('--img_path', type=str,
                         help='画像のパス.')
@@ -175,12 +175,44 @@ def dump_score(score_path, score_dict):
 
 
 def __get_kp_and_des(img):
+    """
+    画像の特徴点を抽出する.
+
+    Parameters
+    ----------
+    img : str
+        特徴点抽出したい画像のパス.
+
+    Returns
+    -------
+    (kp, des) : tuple
+        画像の類似度.
+    """
     global detector
     (kp, des) = detector.detectAndCompute(img, None)
     return (kp, des)
 
 
-def get_match_points(unknown_path, known_path, match_dict):
+def get_match_points(unknown_path, known_path, match_dict,
+                     threthold_W=None, threthold_B=None):
+    """
+    与えられた画像ペアの類似度を返す.既に計算済みであればそのまま返却し、
+    計算済みでなければ特徴点マッチングで計算する.
+
+    Parameters
+    ----------
+    unknown_path : str
+        分類したい画像のパス.
+    known_path : str
+        分類が分かっている画像のパス.
+    match_dict : dict
+        画像の組み合わせと類似度を保存するdict.
+
+    Returns
+    -------
+    ret : float
+        類似度.
+    """
     # 既に計算済みであれば計算済みの値を返す
     global DIR_SEP
     if unknown_path in match_dict:
