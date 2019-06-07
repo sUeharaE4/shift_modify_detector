@@ -273,9 +273,9 @@ def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
         topN = [str(name_score) for name_score in topN]
         # 比較対象が少ない場合は空文字を埋める
         for _ in range(print_ranks - len(topN)):
-            topN.extend('')
+            topN.append('')
         topN.insert(0, img_path)
-        tmp_df = pd.DataFrame(topN, columns=header)
+        tmp_df = pd.DataFrame([topN], columns=header, dtype='object')
         result_df = pd.concat([result_df, tmp_df])
     result_df.to_csv(output_path, header=True, index=False)
 
@@ -359,9 +359,9 @@ def main():
         os.makedirs(output_dir)
 
     logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
-    result_df = create_result_df(match_dict)
-    result_df.to_csv(OUTPUT_PATH, index=False, header=True)
-    # write_result(match_dict, OUTPUT_PATH, use_mean=False, print_ranks=3)
+    # result_df = create_result_df(match_dict)
+    # result_df.to_csv(OUTPUT_PATH, index=False, header=True)
+    write_result(match_dict, OUTPUT_PATH, use_mean=False, print_ranks=3)
     if SAVE_SCORE:
         score_dir = os.path.dirname(SAVE_PATH)
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
