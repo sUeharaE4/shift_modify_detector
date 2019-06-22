@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 # logging.getLogger('werkzeug').disabled = True
+api_logger = logging.getLogger('werkzeug')
 
 
 @app.route('/health_check', methods=['GET'])
@@ -26,18 +27,22 @@ def health_check():
 @app.route('/text_detect', methods=['POST'])
 def text_detect():
     app.logger.debug('text_detect')
-    posted = request.get_json()
-    logging.getLogger('werkzeug').info(str(posted.keys()))
+    posted = json.loads(request.get_json())
+    api_logger.info(str(posted.keys()))
     base64_text = posted['image'].encode('utf-8')
-    logging.getLogger('werkzeug').info(str(type(base64_text)))
+    api_logger.info(str(type(base64_text)))
     img_binary = base64.b64decode(base64_text)
-    logging.getLogger('werkzeug').info(str(type(img_binary)))
+    api_logger.info(str(type(img_binary)))
     jpg = np.frombuffer(img_binary, dtype=np.uint8)
-    logging.getLogger('werkzeug').info(str(type(jpg)))
-    img = cv2.imdecode(jpg, cv2.IMREAD_COLOR)
-    logging.getLogger('werkzeug').info(str(type(img)))
+    api_logger.info(str(type(jpg)))
+    img = cv2.imdecode(jpg, cv2.IMREAD_GRAYSCALE)
+    api_logger.info(str(type(img)))
+    api_logger.info(str(img.shape))
+    with open('debug_base64_text.txt', "wb") as f:
+        f.write(base64_text)
 
     rectangles = posted['rectangles']
+    api_logger.info('rectangles:' + str(rectangles))
     config = ('-l eng+jpn --oem 1 --psm 3')
     res_rectangles = []
     for rect in rectangles:

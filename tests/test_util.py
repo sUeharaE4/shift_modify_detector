@@ -108,7 +108,7 @@ def test_csv2json(input_csv, expect_json):
 def test_create_text_detect_request(input_csv, input_img, expect_json):
     rectangle_json = util.csv2json(input_csv)
     with open(expect_json, 'r', encoding='utf-8') as j:
-        expect = json.load(j)
+        expect = json.dumps(json.load(j))
     img = cv2.imread(input_img)
     api_json = util.create_text_detect_request(rectangle_json, img)
     assert api_json == expect

@@ -10,6 +10,7 @@ import pandas as pd
 
 import util
 from log_mod import modify_logger
+import json
 
 # ログの追加フォーマット
 extra_args = {}
@@ -124,6 +125,7 @@ def main():
     img = cv2.imread(IMAGE_PATH)
     req_json = util.create_text_detect_request(rectangle_json, img)
     logger.debug('type(req_json) : ' + str(type(req_json)), extra=extra_args)
+
     text_detect_url = config['url']['text_detect']
     logger.debug('text_detect_url : ' + text_detect_url, extra=extra_args)
     response_detect = requests.post(text_detect_url, json=req_json)

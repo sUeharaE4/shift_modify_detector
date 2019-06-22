@@ -5,6 +5,7 @@ import os
 from os.path import isfile
 import pandas as pd
 import base64
+import json
 from collections import namedtuple
 
 
@@ -309,7 +310,7 @@ def set_config(config, args):
     return config
 
 
-def modify_path_in_config(config):
+def modify_path_in_config(config, conf_type_has_path=['input', 'output']):
     """
     configのパスをOSに合わせて変更する.
 
@@ -323,7 +324,6 @@ def modify_path_in_config(config):
     config : dict
         更新した設定値
     """
-    conf_type_has_path = ['input', 'output']
     sep_change_dict = {'/': '\\', '\\': '/'}
     sep_dir = os.sep
     other_sep_dir = sep_change_dict[sep_dir]
@@ -391,7 +391,7 @@ def create_text_detect_request(rectangle_json, img):
 
     Returns
     -------
-    api_json : dict
+    api_json : str
         api request のJSON. 画像の追加と座標情報にIDが追加されている.
     """
     for uid, rect in enumerate(rectangle_json['rectangles']):
@@ -399,6 +399,7 @@ def create_text_detect_request(rectangle_json, img):
     base64_text = base64.b64encode(img).decode('utf-8')
     api_json = {'image': base64_text}
     api_json.update(rectangle_json)
+    api_json = json.dumps(api_json)
     return api_json
 
 
