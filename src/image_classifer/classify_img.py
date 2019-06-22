@@ -243,6 +243,19 @@ def get_match_points(unknown_path, known_path, match_dict,
     return ret
 
 
+def calc_mean(score_dict):
+    df = pd.DataFrame.from_dict(score_dict)
+    # TODO 本当はstrじゃなくてDIR_SEPで連結した文字列を返す関数使いたい
+    groups = [util.concat_path(item[0:-1][0], DIR_SEP) for item in df.index]
+    df['group'] = groups
+
+    mean_dict = {}
+    for image in df.index:
+        mean_dict[image] = df[~df[image].isnull()].groupby('group').mean()[image].to_dict()
+
+    return mean_dict
+
+
 def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
     """
     比較結果を出力する.
@@ -259,9 +272,6 @@ def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
     -------
 
     """
-    def calc_mean(score_dict):
-        # TODO 平均を求める
-        return score_dict
 
     header = ['top_' + str(rank + 1) for rank in range(print_ranks)]
     header.insert(0, 'img')

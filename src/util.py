@@ -446,3 +446,26 @@ def uniform_img_size(input_dir, output_dir='uniform_size', save_size=False):
         df['after_height'] = y_max
         df.to_csv(os.path.join(output_dir, 'size.csv'),
                   header=True, index=False)
+
+
+def concat_path(dir_separated_list, sep):
+    """
+    list無いの文字列をsepで連結する.
+
+    Parameters
+    ----------
+    dir_separated_list : list
+        ディレクトリの文字列を格納したlist.
+    sep : str
+        区切り文字.
+
+    Returns
+    -------
+    api_json : str
+        連結したパス.
+    """
+    path = ''
+    for item in dir_separated_list:
+        path = path + item + sep
+    path = path[0:-1*(len(sep))]
+    return path

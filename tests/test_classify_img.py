@@ -56,3 +56,23 @@ def test_create_result_df(match_dict, expect_csv_path):
     expect_df = pd.read_csv(expect_csv_path).reset_index(drop=True)
     result_df = classify_img.create_result_df(match_dict).reset_index(drop=True)
     assert (result_df == expect_df).all().all()
+
+
+@pytest.mark.parametrize('score_dict', [
+    ({'A'+DIR_SEP+'001.jpg':
+        {'A'+DIR_SEP+'002.jpg': 3.14, 'B'+DIR_SEP+'001.jpg': 0.89, 'B'+DIR_SEP+'002.jpg': 0.11},
+      'A'+DIR_SEP+'002.jpg':
+        {'A'+DIR_SEP+'001.jpg': 3.14, 'B'+DIR_SEP+'001.jpg': 0.2, 'B'+DIR_SEP+'002.jpg': 0.3},
+      'B'+DIR_SEP+'001.jpg':
+        {'A'+DIR_SEP+'001.jpg': 0.89, 'A'+DIR_SEP+'002.jpg': 0.2, 'B'+DIR_SEP+'002.jpg': 0.11},
+      'B'+DIR_SEP+'002.jpg':
+        {'A'+DIR_SEP+'001.jpg': 0.11, 'A'+DIR_SEP+'002.jpg': 0.3, 'B'+DIR_SEP+'001.jpg': 0.11}}),
+])
+def test_calc_mean(score_dict):
+    mean_dict = classify_img.calc_mean(score_dict)
+    expect = {'A'+DIR_SEP+'001.jpg': {'A': 3.14, 'B': 0.5},
+              'A'+DIR_SEP+'002.jpg': {'A': 3.14, 'B': 0.25},
+              'B'+DIR_SEP+'001.jpg': {'A': 0.545, 'B': 0.11},
+              'B'+DIR_SEP+'002.jpg': {'A': 0.205, 'B': 0.11},
+              }
+    assert mean_dict == expect

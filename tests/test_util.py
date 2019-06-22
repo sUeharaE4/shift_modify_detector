@@ -15,6 +15,7 @@ sys.path.append('../src/log_mod/')
 import util
 
 TEST_TMP_DIR = 'test_tmp'
+DIR_SEP = os.sep
 
 
 def test_expand2square_no_backcolor():
@@ -147,3 +148,9 @@ def test_uniform_img_size(need_work_dir, input_dir, save_size):
     df = pd.DataFrame([cv2.imread(img_path).shape for img_path in input_paths])
     df.columns = ['width', 'height', 'ch']
     assert uniformed_size == (df['width'].max(), df['height'].max(), 3)
+
+
+def test_concat_path():
+    dir_separated_list = os.getcwd().split(DIR_SEP)
+    concat_result = util.concat_path(dir_separated_list, DIR_SEP)
+    assert concat_result == os.getcwd()
