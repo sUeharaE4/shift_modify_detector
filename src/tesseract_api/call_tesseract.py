@@ -10,7 +10,6 @@ import pandas as pd
 
 import util
 from log_mod import modify_logger
-import json
 
 # ログの追加フォーマット
 extra_args = {}
@@ -105,9 +104,9 @@ def main():
     CSV_PATH = config['input']['csv_path']
 
     OUTPUT_DIR = config['output']['output_dir']
-    CREATE_DIFF = config['mode']['create_diff']
-
-    DIR_SEP = os.sep
+    # CREATE_DIFF = config['mode']['create_diff']
+    #
+    # DIR_SEP = os.sep
 
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)

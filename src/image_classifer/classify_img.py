@@ -4,11 +4,9 @@ from distutils.util import strtobool
 import sys
 import os
 from os.path import isfile
-import numpy as np
 import cv2
 from tqdm import tqdm
 import pickle
-import copy
 import traceback
 import pandas as pd
 import glob

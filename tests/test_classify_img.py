@@ -1,10 +1,7 @@
-import numpy as np
+
 import argparse
 import pytest
 import os
-import json
-import cv2
-import time
 import sys
 import pandas as pd
 sys.path.append(os.getcwd())

@@ -5,7 +5,6 @@ import pytest
 import os
 import json
 import cv2
-import shutil
 
 import sys
 sys.path.append(os.getcwd())
