@@ -5,6 +5,8 @@ src/__pycache__
 src/log_mod/__pycache__
 src/modify
 src/detect_result
+src/image_classifer/*.csv
+src/image_classifer/*.pkl
 tests/__pycache__
 tests/.pytest_cache
 tests/.coverage

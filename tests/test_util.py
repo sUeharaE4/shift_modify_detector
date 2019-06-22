@@ -5,7 +5,6 @@ import pytest
 import os
 import json
 import cv2
-import shutil
 
 import sys
 sys.path.append(os.getcwd())
@@ -15,6 +14,7 @@ sys.path.append('../src/log_mod/')
 import util
 
 TEST_TMP_DIR = 'test_tmp'
+DIR_SEP = os.sep
 
 
 def test_expand2square_no_backcolor():
@@ -108,7 +108,7 @@ def test_csv2json(input_csv, expect_json):
 def test_create_text_detect_request(input_csv, input_img, expect_json):
     rectangle_json = util.csv2json(input_csv)
     with open(expect_json, 'r', encoding='utf-8') as j:
-        expect = json.load(j)
+        expect = json.dumps(json.load(j))
     img = cv2.imread(input_img)
     api_json = util.create_text_detect_request(rectangle_json, img)
     assert api_json == expect
@@ -147,3 +147,9 @@ def test_uniform_img_size(need_work_dir, input_dir, save_size):
     df = pd.DataFrame([cv2.imread(img_path).shape for img_path in input_paths])
     df.columns = ['width', 'height', 'ch']
     assert uniformed_size == (df['width'].max(), df['height'].max(), 3)
+
+
+def test_concat_path():
+    dir_separated_list = os.getcwd().split(DIR_SEP)
+    concat_result = util.concat_path(dir_separated_list, DIR_SEP)
+    assert concat_result == os.getcwd()
