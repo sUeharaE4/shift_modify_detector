@@ -1,10 +1,7 @@
-import numpy as np
 import argparse
 import pytest
 import os
-import json
 import cv2
-import time
 import sys
 sys.path.append(os.getcwd())
 sys.path.append('../src/')
