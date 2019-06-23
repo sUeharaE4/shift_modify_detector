@@ -243,12 +243,11 @@ def get_match_points(unknown_path, known_path, match_dict,
 
 def calc_mean(score_dict):
     df = pd.DataFrame.from_dict(score_dict)
-    # TODO 本当はstrじゃなくてDIR_SEPで連結した文字列を返す関数使いたい
-    groups = [util.concat_path(item[0:-1][0], DIR_SEP) for item in df.index]
+    groups = [util.concat_path(item.split(DIR_SEP)[0:-1], DIR_SEP) for item in df.index]
     df['group'] = groups
-
     mean_dict = {}
-    for image in df.index:
+    for image in df.drop('group', axis=1).columns:
+        logger.debug('image : ' + str(image), extra=extra_args)
         mean_dict[image] = df[~df[image].isnull()].groupby('group').mean()[image].to_dict()
 
     return mean_dict
