@@ -5,6 +5,8 @@ import os
 from os.path import isfile
 import pandas as pd
 import base64
+import json
+from collections import namedtuple
 
 
 def expand2square(img, background_color=None):
@@ -56,7 +58,6 @@ def expand_power2(img, background_color=None):
         1辺の長さが2の累乗にした画像
     """
     height, width = img.shape[:2]
-    assert height == width, '先に正方形にしてください'
     if background_color is None:
         background_color = [255 for _ in range(len(img.shape))]
     expand_img = img.copy()
@@ -309,7 +310,7 @@ def set_config(config, args):
     return config
 
 
-def modify_path_in_config(config):
+def modify_path_in_config(config, conf_type_has_path=['input', 'output']):
     """
     configのパスをOSに合わせて変更する.
 
@@ -323,13 +324,15 @@ def modify_path_in_config(config):
     config : dict
         更新した設定値
     """
-    conf_type_has_path = ['input', 'output']
     sep_change_dict = {'/': '\\', '\\': '/'}
     sep_dir = os.sep
     other_sep_dir = sep_change_dict[sep_dir]
     for conf_type in conf_type_has_path:
         for key in config[conf_type].keys():
-            config[conf_type][key] = config[conf_type][key].replace(other_sep_dir, sep_dir)
+            if config[conf_type][key] is not None and \
+               type(config[conf_type][key]) is str:
+                config[conf_type][key] = config[conf_type][key].replace(
+                                                other_sep_dir, sep_dir)
     return config
 
 
@@ -388,7 +391,7 @@ def create_text_detect_request(rectangle_json, img):
 
     Returns
     -------
-    api_json : dict
+    api_json : str
         api request のJSON. 画像の追加と座標情報にIDが追加されている.
     """
     for uid, rect in enumerate(rectangle_json['rectangles']):
@@ -396,4 +399,73 @@ def create_text_detect_request(rectangle_json, img):
     base64_text = base64.b64encode(img).decode('utf-8')
     api_json = {'image': base64_text}
     api_json.update(rectangle_json)
+    api_json = json.dumps(api_json)
     return api_json
+
+
+def uniform_img_size(input_dir, output_dir='uniform_size', save_size=False):
+    """
+    指定されたディレクトリ配下の画像サイズを統一して出力する.
+
+    Parameters
+    ----------
+    input_dir : str
+        画像が格納されたディレクトリ(テキスト等は除いてください).階層格納可.
+    input_dir : str
+        画像サイズを統一したディレクトリ.
+    save_size : bool
+        統一前後の画像サイズをテキストで出力するか否か.
+
+    Returns
+    -------
+
+    """
+    ImageSize = namedtuple('ImageSize',
+                           ['path', 'before_width', 'before_height'])
+    img_name_list = os.listdir(input_dir)
+    img_path_list = [os.path.join(input_dir, img_name)
+                     for img_name in img_name_list]
+    img_path_list = list(set(img_path_list) - set(output_dir))
+    before_size_list = []
+    for img_path in img_path_list:
+        height, width = cv2.imread(img_path).shape[0:2]
+        before_size_list.append(ImageSize(img_path, width, height))
+    # 画像のサイズを取得する. 読み込まなくてもファイルのプロパティからとれないかなぁ
+    df = pd.DataFrame(before_size_list)
+    x_max = df['before_width'].max()
+    y_max = df['before_height'].max()
+    target_size_img = np.ones((y_max, x_max, 3))
+    for img_name in img_name_list:
+        read_path = os.path.join(input_dir, img_name)
+        write_path = os.path.join(output_dir, img_name)
+        resize_img = expand_cut2base_size(target_size_img,
+                                          cv2.imread(read_path))
+        cv2.imwrite(write_path, resize_img)
+    if save_size:
+        df['after_width'] = x_max
+        df['after_height'] = y_max
+        df.to_csv(os.path.join(output_dir, 'size.csv'),
+                  header=True, index=False)
+
+
+def concat_path(dir_separated_list, sep):
+    """
+    list内の文字列をsepで連結する.
+
+    Parameters
+    ----------
+    dir_separated_list : list
+        ディレクトリの文字列を格納したlist.
+    sep : str
+        区切り文字.
+
+    Returns
+    -------
+    api_json : str
+        連結したパス.
+    """
+    path = ''
+    for item in dir_separated_list:
+        path = path + item + sep
+    path = path[0:-1*(len(sep))]
+    return path

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import argparse
 import pytest
 import os
@@ -11,6 +12,9 @@ sys.path.append('../src/')
 sys.path.append('../src/log_mod/')
 
 import util
+
+TEST_TMP_DIR = 'test_tmp'
+DIR_SEP = os.sep
 
 
 def test_expand2square_no_backcolor():
@@ -104,7 +108,7 @@ def test_csv2json(input_csv, expect_json):
 def test_create_text_detect_request(input_csv, input_img, expect_json):
     rectangle_json = util.csv2json(input_csv)
     with open(expect_json, 'r', encoding='utf-8') as j:
-        expect = json.load(j)
+        expect = json.dumps(json.load(j))
     img = cv2.imread(input_img)
     api_json = util.create_text_detect_request(rectangle_json, img)
     assert api_json == expect
@@ -118,3 +122,34 @@ def test_img2float64(input_img):
     float_img = util.img2float64(img)
     assert float_img.dtype == np.float64
     assert img.shape == float_img.shape
+
+
+@pytest.mark.parametrize('input_dir, save_size', [
+    ('input', False),
+    ('input', True),
+])
+def test_uniform_img_size(need_work_dir, input_dir, save_size):
+    util.uniform_img_size(input_dir, TEST_TMP_DIR, save_size)
+    img_name_list = os.listdir(TEST_TMP_DIR)
+    if save_size:
+        assert 'size.csv' in img_name_list
+        img_name_list.remove('size.csv')
+
+    img_paths = [os.path.join(TEST_TMP_DIR, img_name)
+                 for img_name in img_name_list]
+    img_shape_list = [cv2.imread(img_path).shape for img_path in img_paths]
+    img_shape_set = set(img_shape_list)
+    uniformed_size = img_shape_set.pop()
+    # 全サイズが同じであればsetの中身は1個。popしたから0になるはず。
+    assert len(img_shape_set) == 0
+    input_paths = [os.path.join(input_dir, img_name)
+                   for img_name in img_name_list]
+    df = pd.DataFrame([cv2.imread(img_path).shape for img_path in input_paths])
+    df.columns = ['width', 'height', 'ch']
+    assert uniformed_size == (df['width'].max(), df['height'].max(), 3)
+
+
+def test_concat_path():
+    dir_separated_list = os.getcwd().split(DIR_SEP)
+    concat_result = util.concat_path(dir_separated_list, DIR_SEP)
+    assert concat_result == os.getcwd()

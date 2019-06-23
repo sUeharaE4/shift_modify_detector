@@ -1,5 +1,11 @@
 import pytest
 from logging import INFO, DEBUG
+import sys
+import os
+
+sys.path.append(os.getcwd())
+sys.path.append('../src/')
+sys.path.append('../src/log_mod/')
 from log_mod import modify_logger
 
 

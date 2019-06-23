@@ -3,13 +3,10 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.7.3
+    environment:
+      PYTHONPATH: /home/circleci/project/
     steps:
       - checkout
-      - run:
-          name: Setup custom environment variables
-          command: |
-            echo $(export PYTHONPATH=${PWD}/src) >> $BASH_ENV
-            echo ${PYTHONPATH}
       - run:
           name: install dependencies
           command: |
@@ -17,18 +14,13 @@ jobs:
             . venv/bin/activate
             pip install pytest
             pip install pytest-cov
+            pip install pytest-mock
             pip install -r requirements.txt
       - run:
           name: run test
           command: |
             . ../venv/bin/activate
-            pytest -v -l
+            pytest -v -l --durations=0 --cov=../src --cov-report=term-missing --showlocals
           working_directory: tests/
       - store-test-results:
-          path: test-reports
-      - run:
-          name: run test-cov
-          command: |
-            . ../venv/bin/activate
-            pytest --cov=src
-          working_directory: tests/
+          path: tests/
