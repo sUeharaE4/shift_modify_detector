@@ -19,7 +19,6 @@ input:
   score_path:
   classify_dir: 'images/unknown/'
 
-
 ### 修正画像の出力先
 output:
   # 出力先ディレクトリ
@@ -33,5 +32,7 @@ options:
   # 白と見なす画素値.1〜255で通常は200以上。灰色の領域があれば150等調整してください.
   threthold_W: 200
   threthold_B: 50
-  # RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.
-  mag_scale: 100
+  # 画像1枚1枚のスコアで分類するのではなく、同じ種類の平均で分類する.
+  calc_mean: True
+  # 上位何件まで出力するか.
+  print_rank: 3

@@ -450,7 +450,7 @@ def uniform_img_size(input_dir, output_dir='uniform_size', save_size=False):
 
 def concat_path(dir_separated_list, sep):
     """
-    list無いの文字列をsepで連結する.
+    list内の文字列をsepで連結する.
 
     Parameters
     ----------

@@ -56,6 +56,12 @@ def parse_args():
                         help='白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.')
     parser.add_argument('--threthold_B', type=int,
                         help='黒と見なす画素値.白黒2値化するならthrethold_Wと同じ値.')
+    # 平均を計算して分類する
+    parser.add_argument('--calc_mean', type=strtobool,
+                        help='画像1枚1枚のスコアで分類するのではなく、同じ種類の平均で分類する.')
+
+    parser.add_argument('--print_rank', type=int,
+                        help='上位何件まで表示するか.')
     # Debug log を出力するか
     parser.add_argument('--debug', type=strtobool,
                         help='debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.')
@@ -269,7 +275,8 @@ def write_result(score_dict, output_path, use_mean=False, print_ranks=3):
     -------
 
     """
-
+    if use_mean:
+        score_dict = calc_mean(score_dict)
     header = ['top_' + str(rank + 1) for rank in range(print_ranks)]
     header.insert(0, 'img')
     result_df = pd.DataFrame(columns=header)
@@ -328,6 +335,8 @@ def main():
     REGISTERED_DIR = config['input']['registered_dir']
 
     CLASSIFY_MULTI = config['mode']['classify_multi']
+    CALC_MEAN = config['options']['calc_mean']
+    PRINT_RANK = config['options']['print_rank']
 
     if config['options']['change_bright']:
         threthold_W = config['options']['threthold_W']
@@ -368,7 +377,7 @@ def main():
     logger.debug('match_dict : ' + str(match_dict), extra=extra_args)
     # result_df = create_result_df(match_dict)
     # result_df.to_csv(OUTPUT_PATH, index=False, header=True)
-    write_result(match_dict, OUTPUT_PATH, use_mean=False, print_ranks=3)
+    write_result(match_dict, OUTPUT_PATH, CALC_MEAN, PRINT_RANK)
     if SAVE_SCORE:
         score_dir = os.path.dirname(SAVE_PATH)
         if DIR_SEP in score_dir and not os.path.exists(score_dir):
