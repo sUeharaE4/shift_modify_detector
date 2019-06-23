@@ -7,6 +7,7 @@ src/modify
 src/detect_result
 src/image_classifer/*.csv
 src/image_classifer/*.pkl
+src/tesseract_api
 tests/__pycache__
 tests/.pytest_cache
 tests/.coverage
