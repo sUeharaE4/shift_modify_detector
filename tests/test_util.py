@@ -5,6 +5,7 @@ import pytest
 import os
 import json
 import cv2
+import base64
 
 import sys
 sys.path.append(os.getcwd())
@@ -109,9 +110,19 @@ def test_create_text_detect_request(input_csv, input_img, expect_json):
     rectangle_json = util.csv2json(input_csv)
     with open(expect_json, 'r', encoding='utf-8') as j:
         expect = json.dumps(json.load(j))
-    img = cv2.imread(input_img)
+    img = cv2.imread(input_img, cv2.IMREAD_COLOR)
     api_json = util.create_text_detect_request(rectangle_json, img)
     assert api_json == expect
+
+    api_dict = json.loads(api_json)
+    img_as_text = api_dict['image']
+
+    img_binary = base64.b64decode(img_as_text.encode('utf-8'))
+    img_array = np.frombuffer(img_binary, dtype=np.uint8)
+
+    img_from_text = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    assert type(img) == type(img_from_text)
+    assert img.shape == img_from_text.shape
 
 
 @pytest.mark.parametrize('input_img', [
