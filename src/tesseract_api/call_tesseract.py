@@ -103,23 +103,14 @@ def main():
 
     IMAGE_PATH = config['input']['image_path']
     CSV_PATH = config['input']['csv_path']
-
     OUTPUT_DIR = config['output']['output_dir']
-    # CREATE_DIFF = config['mode']['create_diff']
-    #
+    CREATE_DIFF = config['mode']['create_diff']
+
     DIR_SEP = os.sep
 
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
-    # if DETECT_MULTI:
-    #     pair_img_list = [path for path in os.listdir(DETECT_DIR) if not os.path.isdir(path)]
-    #     # TODO 指定ディレクトリ直下のファイルだけをlistに格納するように変更する
-    #     pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split(DIR_SEP)[-1], 'diff']))
-    #     pair_img_list = [os.path.join(DETECT_DIR, img) for img in pair_img_list]
-    # else:
-    #     pair_img_list = [PAIR_PATH]
-    # logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
     rectangle_json = util.csv2json(CSV_PATH)
     logger.debug('rectangle_json : ' + str(rectangle_json), extra=extra_args)
     img = cv2.imread(IMAGE_PATH, cv2.IMREAD_COLOR)
@@ -138,13 +129,25 @@ def main():
     logger.debug('res_df : ' + str(res_df), extra=extra_args)
     rectangle_df = pd.merge(req_df, res_df, on='uid')
     logger.debug('rectangle_df : ' + str(rectangle_df), extra=extra_args)
-    rectangle_df = rectangle_df[rectangle_df['has_text']]
-    rectangle_df = rectangle_df.drop(res_df.columns, axis=1)
+    has_text_df = rectangle_df[rectangle_df['has_text']]
+    has_text_df = has_text_df.drop(res_df.columns, axis=1)
+    logger.debug('has_text_df : ' + str(has_text_df), extra=extra_args)
 
     csv_header = pd.read_csv(CSV_PATH).columns
-    rectangle_df.columns = csv_header
-    rectangle_df.to_csv(os.path.join(OUTPUT_DIR, CSV_PATH.split(DIR_SEP)[-1]),
-                        index=False, header=True)
+    has_text_df = has_text_df.loc[:, csv_header]
+    has_text_df.to_csv(os.path.join(OUTPUT_DIR, CSV_PATH.split(DIR_SEP)[-1]),
+                       index=False, header=True)
+
+    if CREATE_DIFF:
+        droped_df = rectangle_df[~rectangle_df['has_text']]
+        droped_df = droped_df.drop(res_df.columns, axis=1)
+        droped_df = droped_df.loc[:, csv_header]
+        logger.debug('droped_df : ' + str(droped_df), extra=extra_args)
+        for i, rect in enumerate(droped_df.values):
+            x, y, width, height = rect
+            clip_img = img[y:y+height, x:x+width]
+            img_name = IMAGE_PATH.split(DIR_SEP)[-1].split('.')[0] + '_' + format(i, '0>4')
+            cv2.imwrite(os.path.join(OUTPUT_DIR, img_name + '.jpg'), clip_img)
 
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
