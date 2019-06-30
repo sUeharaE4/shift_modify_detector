@@ -7,6 +7,7 @@ from os.path import isfile
 import cv2
 import requests
 import pandas as pd
+import json
 
 import util
 from log_mod import modify_logger
@@ -106,7 +107,7 @@ def main():
     OUTPUT_DIR = config['output']['output_dir']
     # CREATE_DIFF = config['mode']['create_diff']
     #
-    # DIR_SEP = os.sep
+    DIR_SEP = os.sep
 
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
@@ -121,7 +122,7 @@ def main():
     # logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
     rectangle_json = util.csv2json(CSV_PATH)
     logger.debug('rectangle_json : ' + str(rectangle_json), extra=extra_args)
-    img = cv2.imread(IMAGE_PATH)
+    img = cv2.imread(IMAGE_PATH, cv2.IMREAD_COLOR)
     req_json = util.create_text_detect_request(rectangle_json, img)
     logger.debug('type(req_json) : ' + str(type(req_json)), extra=extra_args)
 
@@ -130,14 +131,20 @@ def main():
     response_detect = requests.post(text_detect_url, json=req_json)
     logger.debug('response_detect : ' + str(response_detect), extra=extra_args)
     res_json = response_detect.json()
-    req_df = pd.read_json(rectangle_json)
-    res_df = pd.read_json(res_json)
+    logger.debug('response : ' + str(res_json), extra=extra_args)
+    req_df = pd.DataFrame(json.loads(req_json)['rectangles'])
+    logger.debug('req_df : ' + str(req_df), extra=extra_args)
+    res_df = pd.DataFrame(res_json, columns=['uid', 'has_text'])
+    logger.debug('res_df : ' + str(res_df), extra=extra_args)
     rectangle_df = pd.merge(req_df, res_df, on='uid')
-    rectangle_df = rectangle_df[rectangle_df['uid']]
+    logger.debug('rectangle_df : ' + str(rectangle_df), extra=extra_args)
+    rectangle_df = rectangle_df[rectangle_df['has_text']]
+    rectangle_df = rectangle_df.drop(res_df.columns, axis=1)
 
     csv_header = pd.read_csv(CSV_PATH).columns
     rectangle_df.columns = csv_header
-    rectangle_df.to_csv(os.path.join(OUTPUT_DIR, CSV_PATH.split('DIR_SEP')[-1]))
+    rectangle_df.to_csv(os.path.join(OUTPUT_DIR, CSV_PATH.split(DIR_SEP)[-1]),
+                        index=False, header=True)
 
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 

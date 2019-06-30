@@ -396,8 +396,10 @@ def create_text_detect_request(rectangle_json, img):
     """
     for uid, rect in enumerate(rectangle_json['rectangles']):
         rect['uid'] = uid
-    base64_text = base64.b64encode(img).decode('utf-8')
-    api_json = {'image': base64_text}
+    _, buffer = cv2.imencode('.jpg', img)
+    img_as_text = base64.b64encode(buffer).decode('utf-8')
+    # base64_text = base64.b64encode(img).decode('utf-8')
+    api_json = {'image': img_as_text}
     api_json.update(rectangle_json)
     api_json = json.dumps(api_json)
     return api_json

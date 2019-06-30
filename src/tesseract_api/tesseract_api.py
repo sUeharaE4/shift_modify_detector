@@ -28,26 +28,24 @@ def health_check():
 def text_detect():
     app.logger.debug('text_detect')
     posted = json.loads(request.get_json())
-    api_logger.info(str(posted.keys()))
-    base64_text = posted['image'].encode('utf-8')
-    api_logger.info(str(type(base64_text)))
-    img_binary = base64.b64decode(base64_text)
-    api_logger.info(str(type(img_binary)))
-    jpg = np.frombuffer(img_binary, dtype=np.uint8)
-    api_logger.info(str(type(jpg)))
-    img = cv2.imdecode(jpg, cv2.IMREAD_GRAYSCALE)
-    api_logger.info(str(type(img)))
-    api_logger.info(str(img.shape))
-    with open('debug_base64_text.txt', "wb") as f:
-        f.write(base64_text)
+    # api_logger.info(str(posted.keys()))
+    img_as_text = posted['image']#.encode('utf-8')
+    # api_logger.info(str(type(img_as_text)))
+    img_binary = base64.b64decode(img_as_text.encode('utf-8'))
+    # api_logger.info(str(type(img_binary)))
+    img_array = np.frombuffer(img_binary, dtype=np.uint8)
+    # api_logger.info(str(type(img_array)))
+    img_from_text = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    # api_logger.info(str(type(img_from_text)))
+    # api_logger.info(str(img_from_text.shape))
 
     rectangles = posted['rectangles']
     api_logger.info('rectangles:' + str(rectangles))
     config = ('-l eng+jpn --oem 1 --psm 3')
     res_rectangles = []
     for rect in rectangles:
-        x, y, width, height, uid = rect
-        clip_img = img[y:y+height, x:x+width]
+        x, y, width, height, uid = rect.values()
+        clip_img = img_from_text[y:y+height, x:x+width]
         # Tesseract の呼び出し
         text = pytesseract.image_to_string(clip_img, config=config)
         if text == '':
