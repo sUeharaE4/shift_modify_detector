@@ -2,7 +2,6 @@
 mode:
   # ディレクトリ単位で実行するか 特定のファイルだけ実行する場合はFalse
   classify_multi: True
-  create_diff: True
   # debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.
   debug: True
 
@@ -10,10 +9,11 @@ mode:
 input:
   # 画像のパス
   img_path: 'images/unknown/questionnaire_001.jpg'
-  # ズレ修正画像のパス(ディレクトリ単位で修正する場合は不要)
+  # 事前に分類済み画像を格納したルートディレクトリ
   registered_dir: 'images/known/'
-  # ズレ修正画像のディレクトリ. テンプレート画像は自動的に除外するので一緒に入っていてもよい.
+  # 類似度計算済みの場合は計算結果ファイルを指定する.
   score_path:
+  # 未分類の画像を格納したディレクトリ
   classify_dir: 'images/unknown/'
 
 ### 修正画像の出力先
