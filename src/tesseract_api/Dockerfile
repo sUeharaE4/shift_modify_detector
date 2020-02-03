@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get -y install locales \
     vim less \
     libboost-all-dev \
+# TODO get tesseract with lstm
     tesseract-ocr \
     tesseract-ocr-jpn \
     libtesseract-dev
