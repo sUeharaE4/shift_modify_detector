@@ -41,7 +41,8 @@ def text_detect():
 
     rectangles = posted['rectangles']
     api_logger.info('rectangles:' + str(rectangles))
-    config = ('-l eng+jpn --oem 1 --psm 3')
+    # config = ('-l eng+jpn --oem 1 --psm 3')
+    config = ('-l eng+jpn --oem 1 --psm 7')
     res_rectangles = []
     for rect in rectangles:
         x, y, width, height, uid = rect.values()
