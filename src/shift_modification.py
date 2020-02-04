@@ -208,6 +208,27 @@ def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw)
     cv2.imwrite(diff_path, show_img)
 
 
+def shift_modify_img(base_path, pair_path, threshold_bw, resize_shape, mag_scale):
+    global logger
+    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    default_height, default_width = base_img.shape[0:2]
+    logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
+
+    expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
+    expand_base_img = util.img2float64(expand_base_img)
+    expand_pair_img = util.img2float64(expand_pair_img)
+    logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
+
+    # 回転方向の修正
+    rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
+                                           resize_shape, mag_scale)
+    # 回転修正したのでPOC
+    modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
+    modified_img = modified_img[0:default_height, 0:default_width]
+
+    return modified_img
+
+
 def main():
     global logger
     # 入力チェック(型までは見ない)
@@ -240,30 +261,30 @@ def main():
         os.mkdir(OUTPUT_DIR)
 
     if MODIFY_MULTI:
-        pair_img_list = os.listdir(MODIFY_DIR)
-        pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
-        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_list]
+        tmp_img_list = os.listdir(MODIFY_DIR)
+        pair_img_name_list = list(set(tmp_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
+        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_name_list]
     else:
         pair_img_list = [PAIR_PATH]
     logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-        base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
-        default_height, default_width = base_img.shape[0:2]
-        logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
-
-        expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
-        expand_base_img = util.img2float64(expand_base_img)
-        expand_pair_img = util.img2float64(expand_pair_img)
-        logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
-
-        # 回転方向の修正
-        rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
-                                               RESIZE_SHAPE, MAG_SCALE)
-        # 回転修正したのでPOC
-        modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
-        modified_img = modified_img[0:default_height, 0:default_width]
+#         base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
+#         default_height, default_width = base_img.shape[0:2]
+#         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
+#
+#         expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
+#         expand_base_img = util.img2float64(expand_base_img)
+#         expand_pair_img = util.img2float64(expand_pair_img)
+#         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
+#         # 回転方向の修正
+#         rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
+#                                                RESIZE_SHAPE, MAG_SCALE)
+#         # 回転修正したのでPOC
+#         modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
+#         modified_img = modified_img[0:default_height, 0:default_width]
+        modified_img = shift_modify_img(BASE_IMG, pair_img_path, THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
         output_img_name, output_img_ext = pair_img_path.split(DIR_SEP)[-1].split('.')
