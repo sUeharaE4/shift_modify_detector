@@ -164,11 +164,11 @@ def shift_modify(base_img, pair_img):
     base_img : numpy.ndarray
         テンプレート画像
     pair_img : numpy.ndarray
-        テンプレート画像
+        修正対象画像
 
     Returns
     -------
-    modified_img : numpy.ndarray
+    modify_img : numpy.ndarray
         水平垂直方向のズレを修正した画像.
     """
     height, width = pair_img.shape
@@ -186,6 +186,22 @@ def shift_modify(base_img, pair_img):
 
 
 def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw):
+    """
+    テンプレート画像、修正対象画像、修正済み画像を並べて比較する.
+
+    Parameters
+    ----------
+    base_path : str
+        テンプレート画像のパス
+    pair_path : str
+        修正対象画像のパス
+    diff_path : str
+        比較画像の出力先パス
+    modified_img : numpy.ndarray
+        水平垂直方向のズレを修正した画像.
+    threshold_bw : int
+        白黒の2値化しきい値
+    """
     global logger
     # 一度形式を変更してしまった画像をもとに戻す
     base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
@@ -209,6 +225,28 @@ def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw)
 
 
 def shift_modify_img(base_path, pair_path, threshold_bw, resize_shape, mag_scale):
+    """
+    テンプレート画像と比較して、画像のズレを修正する.
+
+    Parameters
+    ----------
+    base_path : str
+        テンプレート画像のパス
+    pair_path : str
+        修正対象画像のパス
+    threshold_bw : int
+        白黒の2値化しきい値
+    resize_shape : tuple
+        画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため
+        リサイズが必要.その際のサイズ.(512, 512)等.
+    mag_scale : int
+        RIPOCする際のmagnitude_scale.
+
+    Returns
+    -------
+    modified_img : numpy.ndarray
+        ズレを修正した画像.
+    """
     global logger
     base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
     default_height, default_width = base_img.shape[0:2]
@@ -270,20 +308,6 @@ def main():
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-#         base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
-#         default_height, default_width = base_img.shape[0:2]
-#         logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
-#
-#         expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
-#         expand_base_img = util.img2float64(expand_base_img)
-#         expand_pair_img = util.img2float64(expand_pair_img)
-#         logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
-#         # 回転方向の修正
-#         rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
-#                                                RESIZE_SHAPE, MAG_SCALE)
-#         # 回転修正したのでPOC
-#         modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
-#         modified_img = modified_img[0:default_height, 0:default_width]
         modified_img = shift_modify_img(BASE_IMG, pair_img_path, THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
