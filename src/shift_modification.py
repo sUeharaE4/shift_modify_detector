@@ -185,6 +185,29 @@ def shift_modify(base_img, pair_img):
     return modify_img
 
 
+def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw):
+    global logger
+    # 一度形式を変更してしまった画像をもとに戻す
+    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    base_img = util.exchange_black_white(base_img)
+    pair_img = util.exchange_black_white(pair_img)
+    modified_img = np.asarray(modified_img, dtype=np.uint8)
+    logger.debug('hconcat 3 imgs : ' +
+                 str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
+                 extra=extra_args)
+    show_img = cv2.hconcat([base_img, pair_img, modified_img])
+    # カラー読み込み用
+    tmp_save_path = 'tmp.' + diff_path.split('.')[-1]
+    cv2.imwrite(tmp_save_path, show_img)
+    show_img = cv2.imread(tmp_save_path)
+    os.remove(tmp_save_path)
+    # 罫線追加
+    show_img = util.write_ruled_line(show_img)
+    scale = base_img.shape[1] / show_img.shape[1]
+    show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
+    cv2.imwrite(diff_path, show_img)
+
+
 def main():
     global logger
     # 入力チェック(型までは見ない)
@@ -253,23 +276,8 @@ def main():
             diff_dir = os.path.join(OUTPUT_DIR, 'diff')
             if not os.path.exists(diff_dir):
                 os.mkdir(diff_dir)
-            # 一度形式を変更してしまった画像をもとに戻す
-            base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
-            base_img, pair_img = util.exchange_black_white(base_img), util.exchange_black_white(pair_img)
-            modified_img = np.asarray(modified_img, dtype=np.uint8)
-            logger.debug('hconcat 3 imgs : ' +
-                         str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
-                         extra=extra_args)
-            show_img = cv2.hconcat([base_img, pair_img, modified_img])
-            # カラー読み込み用
-            cv2.imwrite('tmp' + output_img_ext, show_img)
-            show_img = cv2.imread('tmp' + output_img_ext)
-            os.remove('tmp' + output_img_ext)
-            # 罫線追加
-            show_img = util.write_ruled_line(show_img)
-            scale = base_img.shape[1] / show_img.shape[1]
-            show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
-            cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
+            diff_path = os.path.join(diff_dir, output_img_name + output_img_ext)
+            create_diff_img(BASE_IMG, pair_img_path, diff_path, modified_img, THRETHOLD_BW)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
 
