@@ -9,7 +9,7 @@ import json
 from collections import namedtuple
 
 
-def expand2square(img, background_color=None):
+def expand2square(img, bg_color=None):
     """
     画像が正方形になるように画素を追加して拡張する.
 
@@ -17,7 +17,7 @@ def expand2square(img, background_color=None):
     ----------
     img : numpy.ndarray
         正方形にしたい画像.
-    background_color : tuple
+    bg_color : tuple
         追加する画素の背景色。指定がなければ白.
 
     Returns
@@ -27,8 +27,8 @@ def expand2square(img, background_color=None):
 
     """
     height, width = img.shape[:2]
-    if background_color is None:
-        background_color = [255 for _ in range(len(img.shape))]
+    if bg_color is None:
+        bg_color = [255 for _ in range(len(img.shape))]
     expand_img = img.copy()
     # とりあえず拡張する画素数を0として、縦横で大きさに差があれば拡張する
     expand_top, expand_bottom, expand_left, expand_right = 0, 0, 0, 0
@@ -36,12 +36,13 @@ def expand2square(img, background_color=None):
         expand_bottom = width - height
     if height > width:
         expand_right = height - width
-    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
-                                    cv2.BORDER_CONSTANT, value=background_color)
+    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom,
+                                    expand_left, expand_right,
+                                    cv2.BORDER_CONSTANT, value=bg_color)
     return expand_img
 
 
-def expand_power2(img, background_color=None):
+def expand_power2(img, bg_color=None):
     """
     正方形画像の辺が2の累乗になるように画素を追加して拡張する.
 
@@ -49,7 +50,7 @@ def expand_power2(img, background_color=None):
     ----------
     img : numpy.ndarray
         拡張したい画像.
-    background_color : tuple
+    bg_color : tuple
         追加する画素の背景色。指定がなければ白.
 
     Returns
@@ -58,20 +59,23 @@ def expand_power2(img, background_color=None):
         1辺の長さが2の累乗にした画像
     """
     height, width = img.shape[:2]
-    if background_color is None:
-        background_color = [255 for _ in range(len(img.shape))]
+    if bg_color is None:
+        bg_color = [255 for _ in range(len(img.shape))]
     expand_img = img.copy()
     expand_top, expand_bottom, expand_left, expand_right = 0, 0, 0, 0
     expand_power = 1
     while height > 2**expand_power:
-        expand_power = expand_power+1
-    expand_bottom, expand_right = 2**expand_power - height, 2**expand_power - width
-    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom, expand_left, expand_right,
-                                    cv2.BORDER_CONSTANT, value=background_color)
+        expand_power = expand_power + 1
+
+    expand_bottom = 2**expand_power - height
+    expand_right = 2**expand_power - width
+    expand_img = cv2.copyMakeBorder(expand_img, expand_top, expand_bottom,
+                                    expand_left, expand_right,
+                                    cv2.BORDER_CONSTANT, value=bg_color)
     return expand_img
 
 
-def expand_cut2base_size(base_img, written_img, background_color=None):
+def expand_cut2base_size(base_img, written_img, bg_color=None):
     """
     base_imgに合わせて画像をパディングか切り出しする
     いずれも右側、下側に追加or削除を実施する.
@@ -82,7 +86,7 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
         サイズ変更する基準サイズを与える画像.
     written_img : numpy.ndarray
         サイズ変更される画像.
-    background_color : tuple
+    bg_color : tuple
         追加する画素の背景色。指定がなければ白.
 
     Returns
@@ -90,7 +94,7 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
     modify_written : numpy.ndarray
         base_imgにサイズを合わせられた入力画像.
     """
-    def modify_img(img, diff_width, diff_height, background_color):
+    def modify_img(img, diff_width, diff_height, bg_color):
         height, width = img.shape[:2]
         modify_img = img.copy()
         if diff_width < 0:
@@ -99,21 +103,23 @@ def expand_cut2base_size(base_img, written_img, background_color=None):
             modify_img = modify_img[:height - diff_height, :]
         if diff_width > 0:
             modify_img = cv2.copyMakeBorder(modify_img, 0, 0, 0, diff_width,
-                                            cv2.BORDER_CONSTANT, value=background_color)
+                                            cv2.BORDER_CONSTANT,
+                                            value=bg_color)
         if diff_width > 0:
             modify_img = cv2.copyMakeBorder(modify_img, 0, diff_height, 0, 0,
-                                            cv2.BORDER_CONSTANT, value=background_color)
+                                            cv2.BORDER_CONSTANT,
+                                            value=bg_color)
         return modify_img
 
     if base_img.shape == written_img.shape:
         return written_img
-    if background_color is None:
-        background_color = [255 for _ in range(len(base_img.shape))]
+    if bg_color is None:
+        bg_color = [255 for _ in range(len(base_img.shape))]
     base_height, base_width = base_img.shape[:2]
     written_height, written_width = written_img.shape[:2]
     diff_height = base_height - written_height
     diff_width = base_width - written_width
-    modify_written = modify_img(written_img, diff_width, diff_height, background_color)
+    modify_written = modify_img(written_img, diff_width, diff_height, bg_color)
 
     return modify_written
 
@@ -157,7 +163,8 @@ def exchange_black_white(img):
     return 255 - img
 
 
-def calc_mask(base_img, written_img, threshold=230, with_dilation=False, kernel=np.ones((1, 1), np.uint8), itr=1):
+def calc_mask(base_img, written_img, threshold=230, with_dilation=False,
+              kernel=np.ones((1, 1), np.uint8), itr=1):
     """
     2枚の画像から差分を抽出するためのマスクを計算する.
 
@@ -254,9 +261,9 @@ def read_base_pair_imgs(base_img_path, pair_img_path, threshold):
     return [base_img, pair_img]
 
 
-def expand_imgs(base_img, pair_img, background_color=[0, 0]):
-    base_img = expand2square(base_img, background_color)
-    pair_img = expand2square(pair_img, background_color)
+def expand_imgs(base_img, pair_img, bg_color=[0, 0]):
+    base_img = expand2square(base_img, bg_color)
+    pair_img = expand2square(pair_img, bg_color)
     return [base_img, pair_img]
 
 
@@ -432,7 +439,7 @@ def uniform_img_size(input_dir, output_dir='uniform_size', save_size=False):
     for img_path in img_path_list:
         height, width = cv2.imread(img_path).shape[0:2]
         before_size_list.append(ImageSize(img_path, width, height))
-    # 画像のサイズを取得する. 読み込まなくてもファイルのプロパティからとれないかなぁ
+    # 画像のサイズを取得する.
     df = pd.DataFrame(before_size_list)
     x_max = df['before_width'].max()
     y_max = df['before_height'].max()

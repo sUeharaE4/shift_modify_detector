@@ -24,15 +24,17 @@ DIR_SEP = os.sep
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='入力画像が与えられたディレクトリ配下の'
-                                                 'どのディレクトリに属するか推定する.')
+    parser = argparse.ArgumentParser(
+        description='入力画像が与えられたディレクトリ配下の\
+                     どのディレクトリに属するか推定する.')
     # 入力と出力先
     parser.add_argument('--img_path', type=str,
                         help='画像のパス.')
     parser.add_argument('--registered_dir', type=str,
-                        help='画像の種類ごとにディレクトリ分けしたルートディレクトリ.')
+                        help='画像の種類ごとにディレクトリ分けした\
+                              ルートディレクトリ.')
     parser.add_argument('--score_path', type=str,
-                        help='前回計算した比較結果を読み込む場合はパスを指定する.'
+                        help='前回計算した比較結果を読み込む場合はパスを指定.'
                              '同じ画像の組み合わせは計算しなくなる.')
     parser.add_argument('--output_path', type=str,
                         help='推定結果ファイルの出力先.')
@@ -46,27 +48,34 @@ def parse_args():
     # 比較結果を保存するか
     parser.add_argument('--save_score', type=strtobool,
                         help='画像の類似度を比較した結果を保存する場合は指定.'
-                             '次回は同じ組み合わせで計算したくない場合利用する.')
+                             '次回は同じ組み合わせで計算しない場合利用する.')
     parser.add_argument('--save_path', type=str,
                         help='画像の類似度を比較した結果の保存先.')
     # 2値化
     parser.add_argument('--change_bright', type=strtobool,
-                        help='色の影響を受けやすいので閾値を設けて明るさを操作するか.')
+                        help='色の影響を受けやすいので閾値を設けて\
+                              明るさを操作するか.')
     parser.add_argument('--threthold_W', type=int,
-                        help='白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.')
+                        help='白と見なす画素値.1～255で通常は200以上。\
+                              灰色の領域があれば150等調整してください.')
     parser.add_argument('--threthold_B', type=int,
-                        help='黒と見なす画素値.白黒2値化するならthrethold_Wと同じ値.')
+                        help='黒と見なす画素値.白黒2値化するなら\
+                              threthold_Wと同じ値.')
     # 平均を計算して分類する
     parser.add_argument('--calc_mean', type=strtobool,
-                        help='画像1枚1枚のスコアで分類するのではなく、同じ種類の平均で分類する.')
+                        help='画像1枚1枚のスコアで分類するのではなく、\
+                              同じ種類の平均で分類する.')
 
     parser.add_argument('--print_rank', type=int,
                         help='上位何件まで表示するか.')
     # Debug log を出力するか
     parser.add_argument('--debug', type=strtobool,
-                        help='debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.')
-    parser.add_argument('--conf_path', type=str, default='../conf/classify.yml',
-                        help='設定ファイルのパス.デフォルトは ../conf/classify.yml.')
+                        help='debug log をコンソールに出力するか.\
+                              出力する場合進捗表示が崩れる.')
+    parser.add_argument('--conf_path', type=str,
+                        default='../conf/classify.yml',
+                        help='設定ファイルのパス.デフォルトは\
+                              ../conf/classify.yml.')
     args = parser.parse_args()
 
     return args
@@ -99,7 +108,8 @@ def check_config(config):
               '例：--img_path unknown/questionnaire_001.jpg')
         return False
     if score_path is not None and not isfile(score_path):
-        print('指定した計算結果がありません.パスを確認してください：' + score_path)
+        print('指定した計算結果がありません.パスを確認してください：' +
+               score_path)
         return False
     if not os.path.isdir(registered_dir):
         print('事前に画像をディレクトリ分けしたディレクトリがありません.'
@@ -249,12 +259,14 @@ def get_match_points(unknown_path, known_path, match_dict,
 
 def calc_mean(score_dict):
     df = pd.DataFrame.from_dict(score_dict)
-    groups = [util.concat_path(item.split(DIR_SEP)[0:-1], DIR_SEP) for item in df.index]
+    groups = [util.concat_path(item.split(DIR_SEP)[0:-1], DIR_SEP) \
+              for item in df.index]
     df['group'] = groups
     mean_dict = {}
     for image in df.drop('group', axis=1).columns:
         logger.debug('image : ' + str(image), extra=extra_args)
-        mean_dict[image] = df[~df[image].isnull()].groupby('group').mean()[image].to_dict()
+        mean_dict[image] = df[~df[image].isnull()]\
+                           .groupby('group').mean()[image].to_dict()
 
     return mean_dict
 
@@ -354,7 +366,7 @@ def main():
             os.makedirs(score_dir)
     if CLASSIFY_MULTI:
         CLASSIFY_DIR = config['input']['classify_dir']
-        # TODO 明らかに違うディレクトリを除外するオプションができたら処理を入れる
+        # TODO 明らかに違うディレクトリを除外するオプションができたら処理追加
         unknown_img_list = find_img_recursive(CLASSIFY_DIR, DIR_SEP)
     else:
         unknown_img_list = [config['input']['img_path']]

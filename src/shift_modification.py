@@ -23,7 +23,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='テンプレート画像と入力画像のズレを修正するスクリプト.')
     # 入力画像と出力先
     parser.add_argument('--template_path', type=str,
-                        help='テンプレート画像のパス.ズレ修正するための基準画像.')
+                        help='テンプレート画像のパス.\
+                              ズレ修正するための基準画像.')
     parser.add_argument('--pair_path', type=str,
                         help='ズレを修正する画像のパス.')
     parser.add_argument('--output_dir', type=str,
@@ -31,20 +32,26 @@ def parse_args():
     # ズレ修正でディレクトリを指定するか
     # TODO 将来的にはサブコマンドで実装してほしい
     parser.add_argument('--modify_multi', type=strtobool,
-                        help='ズレ修正対象を1枚の画像ではなくディレクトリにする場合True.')
+                        help='ズレ修正対象を1枚の画像ではなく\
+                              ディレクトリにする場合True.')
     parser.add_argument('--modify_dir', type=str,
-                        help='ズレ修正する画像が格納されたディレクトリのパス.--template_path以外すべて修正対称にする')
+                        help='ズレ修正する画像が格納されたディレクトリのパス.\
+                             --template_path以外すべて修正対称にする')
     # 比較画像を作成するか
     parser.add_argument('--create_diff', type=strtobool,
-                        help='ズレ修正前後とテンプレート画像を並べた比較画像を生成する場合True.')
+                        help='ズレ修正前後とテンプレート画像を並べた比較画像を\
+                              生成する場合True.')
     # 閾値
     parser.add_argument('--threthold_BW', type=int,
-                        help='白と見なす画素値.1～255で通常は200以上。灰色の領域があれば150等調整してください.')
+                        help='白と見なす画素値.1～255で通常は200以上。\
+                              灰色の領域があれば150等調整してください.')
     parser.add_argument('--mag_scale', type=int,
-                        help='RIPOCする際のmagnitude_scale. よくわからなければ指定不要です.')
+                        help='RIPOCする際のmagnitude_scale.\
+                              よくわからなければ指定不要です.')
     # Debug log を出力するか
     parser.add_argument('--debug', type=strtobool,
-                        help='debug log をコンソールに出力するか.出力する場合進捗表示が崩れる.')
+                        help='debug log をコンソールに出力するか.\
+                              出力する場合進捗表示が崩れる.')
     parser.add_argument('--conf_path', type=str, default='conf/shift.yml',
                         help='設定ファイルのパス.デフォルトはconf/shift.yml.')
     args = parser.parse_args()
@@ -71,13 +78,16 @@ def check_config(config):
     modify_dir = config['input']['modify_dir']
     modify_multi = config['mode']['modify_multi']
     if template_path is None:
-        print('テンプレート画像のパスを指定してください.例：--template_path input/template.jpg')
+        print('テンプレート画像のパスを指定してください.\
+               例：--template_path input/template.jpg')
         return False
     if not isfile(template_path):
-        print('テンプレート画像が存在しません.パスを確認してください :' + template_path)
+        print('テンプレート画像が存在しません.パスを確認してください :'\
+              + template_path)
         return False
     if pair_path is None and not modify_multi:
-        print('比較画像のパスを指定してください。またはディレクトリを指定してください.')
+        print('比較画像のパスを指定してください。\
+               またはディレクトリを指定してください.')
         print('例1：--pair_path input/other.jpg')
         print('例2：--modify_multi --modify_dir input')
         return False
@@ -110,16 +120,22 @@ def rotate_modify(base_img, pair_img, resize_shape=(512, 512), mag_scale=100):
         回転方向のズレを修正した画像.
     """
     # 512,512にリサイズ(計算効率・閾値の調整しやすさでこのサイズにした)
-    resize_base_img, resize_pair_img = util.resize_imgs(base_img, pair_img, resize_shape)
+    resize_base_img, resize_pair_img = util.resize_imgs(base_img,
+                                                        pair_img,
+                                                        resize_shape)
     row, col = resize_base_img.shape[0:2]
     hrow = int(row/2)
     center = tuple(np.array(resize_base_img.shape) / 2)
-    logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]), extra=extra_args)
+    logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]),
+                 extra=extra_args)
 
     # 対数極座標変換と回転・拡大の推定
-    base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img, resize_pair_img, mag_scale)
+    base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img,
+                                                           resize_pair_img,
+                                                           mag_scale)
 
-    row_shift, col_shift, _ = ripoc.fft_coreg_LP(base_log_poler, pair_log_poler)
+    row_shift, col_shift, _ = ripoc.fft_coreg_LP(base_log_poler,
+                                                 pair_log_poler)
     angle_est = - row_shift / (hrow) * 180
     scale_est = 1.0 - col_shift / mag_scale
 
@@ -141,7 +157,8 @@ def rotate_modify(base_img, pair_img, resize_shape=(512, 512), mag_scale=100):
         g_coreg[slice(row_coreg_tmp), slice(col_coreg_tmp)] = g_coreg_tmp
 
     # estimate translation & translate slave
-    row_shift, col_shift, _, g_coreg = ripoc.fft_coreg_trans(resize_base_img, g_coreg)
+    row_shift, col_shift, _, g_coreg = ripoc.fft_coreg_trans(resize_base_img,
+                                                             g_coreg)
     # check estimates
     logger.debug('RIPOC Results', extra=extra_args)
     logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
@@ -185,7 +202,8 @@ def shift_modify(base_img, pair_img):
     return modify_img
 
 
-def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw):
+def create_diff_img(base_path, pair_path, diff_path,
+                    modified_img, threshold_bw):
     """
     テンプレート画像、修正対象画像、修正済み画像を並べて比較する.
 
@@ -204,12 +222,14 @@ def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw)
     """
     global logger
     # 一度形式を変更してしまった画像をもとに戻す
-    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    base_img, pair_img = util.read_base_pair_imgs(base_path,
+                                                  pair_path,
+                                                  threshold_bw)
     base_img = util.exchange_black_white(base_img)
     pair_img = util.exchange_black_white(pair_img)
     modified_img = np.asarray(modified_img, dtype=np.uint8)
-    logger.debug('hconcat 3 imgs : ' +
-                 str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
+    logger.debug('hconcat 3 imgs : ' + str(base_img.shape) + ' ' \
+                 + str(base_img.shape) + ' ' + str(modified_img.shape),
                  extra=extra_args)
     show_img = cv2.hconcat([base_img, pair_img, modified_img])
     # カラー読み込み用
@@ -224,7 +244,8 @@ def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw)
     cv2.imwrite(diff_path, show_img)
 
 
-def shift_modify_img(base_path, pair_path, threshold_bw, resize_shape, mag_scale):
+def shift_modify_img(base_path, pair_path,
+                     threshold_bw, resize_shape, mag_scale):
     """
     テンプレート画像と比較して、画像のズレを修正する.
 
@@ -248,14 +269,18 @@ def shift_modify_img(base_path, pair_path, threshold_bw, resize_shape, mag_scale
         ズレを修正した画像.
     """
     global logger
-    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    base_img, pair_img = util.read_base_pair_imgs(base_path,
+                                                  pair_path,
+                                                  threshold_bw)
     default_height, default_width = base_img.shape[0:2]
-    logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
+    logger.debug('default_size : ' + str(base_img.shape[0:2]),
+                 extra=extra_args)
 
     expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
     expand_base_img = util.img2float64(expand_base_img)
     expand_pair_img = util.img2float64(expand_pair_img)
-    logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
+    logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]),
+                 extra=extra_args)
 
     # 回転方向の修正
     rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
@@ -300,20 +325,26 @@ def main():
 
     if MODIFY_MULTI:
         tmp_img_list = os.listdir(MODIFY_DIR)
-        pair_img_name_list = list(set(tmp_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
-        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_name_list]
+        pair_img_name_list = \
+            list(set(tmp_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
+        pair_img_list = \
+            [os.path.join(MODIFY_DIR, img) for img in pair_img_name_list]
     else:
         pair_img_list = [PAIR_PATH]
     logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-        modified_img = shift_modify_img(BASE_IMG, pair_img_path, THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
-        logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
+        modified_img = shift_modify_img(BASE_IMG, pair_img_path,
+                                        THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
+        logger.debug('modified_size : ' + str(modified_img.shape[0:2]),
+                     extra=extra_args)
 
-        output_img_name, output_img_ext = pair_img_path.split(DIR_SEP)[-1].split('.')
+        output_img_name, output_img_ext = \
+            pair_img_path.split(DIR_SEP)[-1].split('.')
         output_img_ext = '.' + output_img_ext
-        output_img_path = os.path.join(OUTPUT_DIR, output_img_name + output_img_ext)
+        output_img_path = os.path.join(OUTPUT_DIR,
+                                       output_img_name + output_img_ext)
         logger.debug('output_path : ' + output_img_path, extra=extra_args)
         cv2.imwrite(output_img_path, modified_img)
 
@@ -321,8 +352,10 @@ def main():
             diff_dir = os.path.join(OUTPUT_DIR, 'diff')
             if not os.path.exists(diff_dir):
                 os.mkdir(diff_dir)
-            diff_path = os.path.join(diff_dir, output_img_name + output_img_ext)
-            create_diff_img(BASE_IMG, pair_img_path, diff_path, modified_img, THRETHOLD_BW)
+            diff_path = os.path.join(diff_dir,
+                                     output_img_name + output_img_ext)
+            create_diff_img(BASE_IMG, pair_img_path, diff_path,
+                            modified_img, THRETHOLD_BW)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
 
