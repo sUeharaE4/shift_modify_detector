@@ -148,9 +148,11 @@
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">isfile</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
 
 
-<div class="viewcode-block" id="expand2square"><a class="viewcode-back" href="../../src.html#src.util.expand2square">[docs]</a><span class="k">def</span> <span class="nf">expand2square</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="expand2square"><a class="viewcode-back" href="../../src.html#src.util.expand2square">[docs]</a><span class="k">def</span> <span class="nf">expand2square</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bg_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    画像が正方形になるように画素を追加して拡張する.</span>
 
@@ -158,7 +160,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    img : numpy.ndarray</span>
 <span class="sd">        正方形にしたい画像.</span>
-<span class="sd">    background_color : tuple</span>
+<span class="sd">    bg_color : tuple</span>
 <span class="sd">        追加する画素の背景色。指定がなければ白.</span>
 
 <span class="sd">    Returns</span>
@@ -168,8 +170,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">background_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">background_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">bg_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bg_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
     <span class="n">expand_img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="c1"># とりあえず拡張する画素数を0として、縦横で大きさに差があれば拡張する</span>
     <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span> <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
@@ -177,12 +179,13 @@
         <span class="n">expand_bottom</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">height</span>
     <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="n">width</span><span class="p">:</span>
         <span class="n">expand_right</span> <span class="o">=</span> <span class="n">height</span> <span class="o">-</span> <span class="n">width</span>
-    <span class="n">expand_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">expand_img</span><span class="p">,</span> <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span> <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span><span class="p">,</span>
-                                    <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">background_color</span><span class="p">)</span>
+    <span class="n">expand_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">expand_img</span><span class="p">,</span> <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span>
+                                    <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span><span class="p">,</span>
+                                    <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">bg_color</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">expand_img</span></div>
 
 
-<div class="viewcode-block" id="expand_power2"><a class="viewcode-back" href="../../src.html#src.util.expand_power2">[docs]</a><span class="k">def</span> <span class="nf">expand_power2</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="expand_power2"><a class="viewcode-back" href="../../src.html#src.util.expand_power2">[docs]</a><span class="k">def</span> <span class="nf">expand_power2</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bg_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    正方形画像の辺が2の累乗になるように画素を追加して拡張する.</span>
 
@@ -190,7 +193,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    img : numpy.ndarray</span>
 <span class="sd">        拡張したい画像.</span>
-<span class="sd">    background_color : tuple</span>
+<span class="sd">    bg_color : tuple</span>
 <span class="sd">        追加する画素の背景色。指定がなければ白.</span>
 
 <span class="sd">    Returns</span>
@@ -199,21 +202,23 @@
 <span class="sd">        1辺の長さが2の累乗にした画像</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">height</span> <span class="o">==</span> <span class="n">width</span><span class="p">,</span> <span class="s1">&#39;先に正方形にしてください&#39;</span>
-    <span class="k">if</span> <span class="n">background_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">background_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">bg_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bg_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
     <span class="n">expand_img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span> <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="n">expand_power</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">while</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">**</span><span class="n">expand_power</span><span class="p">:</span>
-        <span class="n">expand_power</span> <span class="o">=</span> <span class="n">expand_power</span><span class="o">+</span><span class="mi">1</span>
-    <span class="n">expand_bottom</span><span class="p">,</span> <span class="n">expand_right</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">expand_power</span> <span class="o">-</span> <span class="n">height</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="n">expand_power</span> <span class="o">-</span> <span class="n">width</span>
-    <span class="n">expand_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">expand_img</span><span class="p">,</span> <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span> <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span><span class="p">,</span>
-                                    <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">background_color</span><span class="p">)</span>
+        <span class="n">expand_power</span> <span class="o">=</span> <span class="n">expand_power</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">expand_bottom</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">expand_power</span> <span class="o">-</span> <span class="n">height</span>
+    <span class="n">expand_right</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">expand_power</span> <span class="o">-</span> <span class="n">width</span>
+    <span class="n">expand_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">expand_img</span><span class="p">,</span> <span class="n">expand_top</span><span class="p">,</span> <span class="n">expand_bottom</span><span class="p">,</span>
+                                    <span class="n">expand_left</span><span class="p">,</span> <span class="n">expand_right</span><span class="p">,</span>
+                                    <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">bg_color</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">expand_img</span></div>
 
 
-<div class="viewcode-block" id="expand_cut2base_size"><a class="viewcode-back" href="../../src.html#src.util.expand_cut2base_size">[docs]</a><span class="k">def</span> <span class="nf">expand_cut2base_size</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">written_img</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="expand_cut2base_size"><a class="viewcode-back" href="../../src.html#src.util.expand_cut2base_size">[docs]</a><span class="k">def</span> <span class="nf">expand_cut2base_size</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">written_img</span><span class="p">,</span> <span class="n">bg_color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    base_imgに合わせて画像をパディングか切り出しする</span>
 <span class="sd">    いずれも右側、下側に追加or削除を実施する.</span>
@@ -224,7 +229,7 @@
 <span class="sd">        サイズ変更する基準サイズを与える画像.</span>
 <span class="sd">    written_img : numpy.ndarray</span>
 <span class="sd">        サイズ変更される画像.</span>
-<span class="sd">    background_color : tuple</span>
+<span class="sd">    bg_color : tuple</span>
 <span class="sd">        追加する画素の背景色。指定がなければ白.</span>
 
 <span class="sd">    Returns</span>
@@ -232,7 +237,7 @@
 <span class="sd">    modify_written : numpy.ndarray</span>
 <span class="sd">        base_imgにサイズを合わせられた入力画像.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">modify_img</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="n">background_color</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">modify_img</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="n">bg_color</span><span class="p">):</span>
         <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">modify_img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">diff_width</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -241,21 +246,23 @@
             <span class="n">modify_img</span> <span class="o">=</span> <span class="n">modify_img</span><span class="p">[:</span><span class="n">height</span> <span class="o">-</span> <span class="n">diff_height</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">if</span> <span class="n">diff_width</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">modify_img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span>
-                                            <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">background_color</span><span class="p">)</span>
+                                            <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span>
+                                            <span class="n">value</span><span class="o">=</span><span class="n">bg_color</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diff_width</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">modify_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">copyMakeBorder</span><span class="p">(</span><span class="n">modify_img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
-                                            <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">background_color</span><span class="p">)</span>
+                                            <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">,</span>
+                                            <span class="n">value</span><span class="o">=</span><span class="n">bg_color</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">modify_img</span>
 
     <span class="k">if</span> <span class="n">base_img</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">written_img</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">written_img</span>
-    <span class="k">if</span> <span class="n">background_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">background_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">bg_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bg_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">))]</span>
     <span class="n">base_height</span><span class="p">,</span> <span class="n">base_width</span> <span class="o">=</span> <span class="n">base_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">written_height</span><span class="p">,</span> <span class="n">written_width</span> <span class="o">=</span> <span class="n">written_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">diff_height</span> <span class="o">=</span> <span class="n">base_height</span> <span class="o">-</span> <span class="n">written_height</span>
     <span class="n">diff_width</span> <span class="o">=</span> <span class="n">base_width</span> <span class="o">-</span> <span class="n">written_width</span>
-    <span class="n">modify_written</span> <span class="o">=</span> <span class="n">modify_img</span><span class="p">(</span><span class="n">written_img</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="n">background_color</span><span class="p">)</span>
+    <span class="n">modify_written</span> <span class="o">=</span> <span class="n">modify_img</span><span class="p">(</span><span class="n">written_img</span><span class="p">,</span> <span class="n">diff_width</span><span class="p">,</span> <span class="n">diff_height</span><span class="p">,</span> <span class="n">bg_color</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">modify_written</span></div>
 
@@ -299,7 +306,8 @@
     <span class="k">return</span> <span class="mi">255</span> <span class="o">-</span> <span class="n">img</span></div>
 
 
-<div class="viewcode-block" id="calc_mask"><a class="viewcode-back" href="../../src.html#src.util.calc_mask">[docs]</a><span class="k">def</span> <span class="nf">calc_mask</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">written_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">230</span><span class="p">,</span> <span class="n">with_dilation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">itr</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_mask"><a class="viewcode-back" href="../../src.html#src.util.calc_mask">[docs]</a><span class="k">def</span> <span class="nf">calc_mask</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">written_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">230</span><span class="p">,</span> <span class="n">with_dilation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">kernel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">itr</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    2枚の画像から差分を抽出するためのマスクを計算する.</span>
 
@@ -396,9 +404,9 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="expand_imgs"><a class="viewcode-back" href="../../src.html#src.util.expand_imgs">[docs]</a><span class="k">def</span> <span class="nf">expand_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
-    <span class="n">base_img</span> <span class="o">=</span> <span class="n">expand2square</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">background_color</span><span class="p">)</span>
-    <span class="n">pair_img</span> <span class="o">=</span> <span class="n">expand2square</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">background_color</span><span class="p">)</span>
+<div class="viewcode-block" id="expand_imgs"><a class="viewcode-back" href="../../src.html#src.util.expand_imgs">[docs]</a><span class="k">def</span> <span class="nf">expand_imgs</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">,</span> <span class="n">bg_color</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]):</span>
+    <span class="n">base_img</span> <span class="o">=</span> <span class="n">expand2square</span><span class="p">(</span><span class="n">base_img</span><span class="p">,</span> <span class="n">bg_color</span><span class="p">)</span>
+    <span class="n">pair_img</span> <span class="o">=</span> <span class="n">expand2square</span><span class="p">(</span><span class="n">pair_img</span><span class="p">,</span> <span class="n">bg_color</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">base_img</span><span class="p">,</span> <span class="n">pair_img</span><span class="p">]</span></div>
 
 
@@ -452,7 +460,7 @@
     <span class="k">return</span> <span class="n">config</span></div>
 
 
-<div class="viewcode-block" id="modify_path_in_config"><a class="viewcode-back" href="../../src.html#src.util.modify_path_in_config">[docs]</a><span class="k">def</span> <span class="nf">modify_path_in_config</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="modify_path_in_config"><a class="viewcode-back" href="../../src.html#src.util.modify_path_in_config">[docs]</a><span class="k">def</span> <span class="nf">modify_path_in_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">conf_type_has_path</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    configのパスをOSに合わせて変更する.</span>
 
@@ -466,13 +474,15 @@
 <span class="sd">    config : dict</span>
 <span class="sd">        更新した設定値</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">conf_type_has_path</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">]</span>
     <span class="n">sep_change_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;/&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;/&#39;</span><span class="p">}</span>
     <span class="n">sep_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
     <span class="n">other_sep_dir</span> <span class="o">=</span> <span class="n">sep_change_dict</span><span class="p">[</span><span class="n">sep_dir</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">conf_type</span> <span class="ow">in</span> <span class="n">conf_type_has_path</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">other_sep_dir</span><span class="p">,</span> <span class="n">sep_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+               <span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">conf_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                                                <span class="n">other_sep_dir</span><span class="p">,</span> <span class="n">sep_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">config</span></div>
 
 
@@ -531,15 +541,86 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    api_json : dict</span>
+<span class="sd">    api_json : str</span>
 <span class="sd">        api request のJSON. 画像の追加と座標情報にIDが追加されている.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">rect</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rectangle_json</span><span class="p">[</span><span class="s1">&#39;rectangles&#39;</span><span class="p">]):</span>
         <span class="n">rect</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uid</span>
-    <span class="n">base64_text</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">img</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-    <span class="n">api_json</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">base64_text</span><span class="p">}</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imencode</span><span class="p">(</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span>
+    <span class="n">img_as_text</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="c1"># base64_text = base64.b64encode(img).decode(&#39;utf-8&#39;)</span>
+    <span class="n">api_json</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">img_as_text</span><span class="p">}</span>
     <span class="n">api_json</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rectangle_json</span><span class="p">)</span>
+    <span class="n">api_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">api_json</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">api_json</span></div>
+
+
+<div class="viewcode-block" id="uniform_img_size"><a class="viewcode-back" href="../../src.html#src.util.uniform_img_size">[docs]</a><span class="k">def</span> <span class="nf">uniform_img_size</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s1">&#39;uniform_size&#39;</span><span class="p">,</span> <span class="n">save_size</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    指定されたディレクトリ配下の画像サイズを統一して出力する.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_dir : str</span>
+<span class="sd">        画像が格納されたディレクトリ(テキスト等は除いてください).階層格納可.</span>
+<span class="sd">    input_dir : str</span>
+<span class="sd">        画像サイズを統一したディレクトリ.</span>
+<span class="sd">    save_size : bool</span>
+<span class="sd">        統一前後の画像サイズをテキストで出力するか否か.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ImageSize</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;ImageSize&#39;</span><span class="p">,</span>
+                           <span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;before_width&#39;</span><span class="p">,</span> <span class="s1">&#39;before_height&#39;</span><span class="p">])</span>
+    <span class="n">img_name_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span>
+    <span class="n">img_path_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">img_name</span> <span class="ow">in</span> <span class="n">img_name_list</span><span class="p">]</span>
+    <span class="n">img_path_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">img_path_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_dir</span><span class="p">))</span>
+    <span class="n">before_size_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">img_path</span> <span class="ow">in</span> <span class="n">img_path_list</span><span class="p">:</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">before_size_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ImageSize</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+    <span class="c1"># 画像のサイズを取得する.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">before_size_list</span><span class="p">)</span>
+    <span class="n">x_max</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;before_width&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">y_max</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;before_height&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">target_size_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">y_max</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">img_name</span> <span class="ow">in</span> <span class="n">img_name_list</span><span class="p">:</span>
+        <span class="n">read_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+        <span class="n">write_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+        <span class="n">resize_img</span> <span class="o">=</span> <span class="n">expand_cut2base_size</span><span class="p">(</span><span class="n">target_size_img</span><span class="p">,</span>
+                                          <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">read_path</span><span class="p">))</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">write_path</span><span class="p">,</span> <span class="n">resize_img</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_size</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;after_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_max</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;after_height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_max</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;size.csv&#39;</span><span class="p">),</span>
+                  <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="concat_path"><a class="viewcode-back" href="../../src.html#src.util.concat_path">[docs]</a><span class="k">def</span> <span class="nf">concat_path</span><span class="p">(</span><span class="n">dir_separated_list</span><span class="p">,</span> <span class="n">sep</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    list内の文字列をsepで連結する.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dir_separated_list : list</span>
+<span class="sd">        ディレクトリの文字列を格納したlist.</span>
+<span class="sd">    sep : str</span>
+<span class="sd">        区切り文字.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    api_json : str</span>
+<span class="sd">        連結したパス.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dir_separated_list</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="n">item</span> <span class="o">+</span> <span class="n">sep</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sep</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">path</span></div>
 </pre></div>
 
            </div>

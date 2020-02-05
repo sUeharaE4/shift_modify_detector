@@ -255,6 +255,23 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="src.shift_modification.create_diff_img">
+<code class="descclassname">src.shift_modification.</code><code class="descname">create_diff_img</code><span class="sig-paren">(</span><em>base_path</em>, <em>pair_path</em>, <em>diff_path</em>, <em>modified_img</em>, <em>threshold_bw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#create_diff_img"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.create_diff_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>テンプレート画像、修正対象画像、修正済み画像を並べて比較する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_path</strong> (<em>str</em>) – テンプレート画像のパス</p></li>
+<li><p><strong>pair_path</strong> (<em>str</em>) – 修正対象画像のパス</p></li>
+<li><p><strong>diff_path</strong> (<em>str</em>) – 比較画像の出力先パス</p></li>
+<li><p><strong>modified_img</strong> (<em>numpy.ndarray</em>) – 水平垂直方向のズレを修正した画像.</p></li>
+<li><p><strong>threshold_bw</strong> (<em>int</em>) – 白黒の2値化しきい値</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="src.shift_modification.main">
 <code class="descclassname">src.shift_modification.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -295,11 +312,35 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
-<li><p><strong>pair_img</strong> (<em>numpy.ndarray</em>) – テンプレート画像</p></li>
+<li><p><strong>pair_img</strong> (<em>numpy.ndarray</em>) – 修正対象画像</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>modified_img</strong> – 水平垂直方向のズレを修正した画像.</p>
+<dd class="field-even"><p><strong>modify_img</strong> – 水平垂直方向のズレを修正した画像.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.shift_modification.shift_modify_img">
+<code class="descclassname">src.shift_modification.</code><code class="descname">shift_modify_img</code><span class="sig-paren">(</span><em>base_path</em>, <em>pair_path</em>, <em>threshold_bw</em>, <em>resize_shape</em>, <em>mag_scale</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/shift_modification.html#shift_modify_img"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.shift_modification.shift_modify_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>テンプレート画像と比較して、画像のズレを修正する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_path</strong> (<em>str</em>) – テンプレート画像のパス</p></li>
+<li><p><strong>pair_path</strong> (<em>str</em>) – 修正対象画像のパス</p></li>
+<li><p><strong>threshold_bw</strong> (<em>int</em>) – 白黒の2値化しきい値</p></li>
+<li><p><strong>resize_shape</strong> (<em>tuple</em>) – 画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため
+リサイズが必要.その際のサイズ.(512, 512)等.</p></li>
+<li><p><strong>mag_scale</strong> (<em>int</em>) – RIPOCする際のmagnitude_scale.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>modified_img</strong> – ズレを修正した画像.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
@@ -335,6 +376,26 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="src.util.concat_path">
+<code class="descclassname">src.util.</code><code class="descname">concat_path</code><span class="sig-paren">(</span><em>dir_separated_list</em>, <em>sep</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#concat_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.concat_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>list内の文字列をsepで連結する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir_separated_list</strong> (<em>list</em>) – ディレクトリの文字列を格納したlist.</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – 区切り文字.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>api_json</strong> – 連結したパス.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="src.util.create_text_detect_request">
 <code class="descclassname">src.util.</code><code class="descname">create_text_detect_request</code><span class="sig-paren">(</span><em>rectangle_json</em>, <em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#create_text_detect_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.create_text_detect_request" title="Permalink to this definition">¶</a></dt>
 <dd><p>TesseractのTextDetection用jsonを生成する.</p>
@@ -349,7 +410,7 @@
 <dd class="field-even"><p><strong>api_json</strong> – api request のJSON. 画像の追加と座標情報にIDが追加されている.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -390,13 +451,13 @@
 
 <dl class="function">
 <dt id="src.util.expand2square">
-<code class="descclassname">src.util.</code><code class="descname">expand2square</code><span class="sig-paren">(</span><em>img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand2square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand2square" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.util.</code><code class="descname">expand2square</code><span class="sig-paren">(</span><em>img</em>, <em>bg_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand2square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand2square" title="Permalink to this definition">¶</a></dt>
 <dd><p>画像が正方形になるように画素を追加して拡張する.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 正方形にしたい画像.</p></li>
-<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+<li><p><strong>bg_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -410,7 +471,7 @@
 
 <dl class="function">
 <dt id="src.util.expand_cut2base_size">
-<code class="descclassname">src.util.</code><code class="descname">expand_cut2base_size</code><span class="sig-paren">(</span><em>base_img</em>, <em>written_img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_cut2base_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_cut2base_size" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.util.</code><code class="descname">expand_cut2base_size</code><span class="sig-paren">(</span><em>base_img</em>, <em>written_img</em>, <em>bg_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_cut2base_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_cut2base_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>base_imgに合わせて画像をパディングか切り出しする
 いずれも右側、下側に追加or削除を実施する.</p>
 <dl class="field-list simple">
@@ -418,7 +479,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_img</strong> (<em>numpy.ndarray</em>) – サイズ変更する基準サイズを与える画像.</p></li>
 <li><p><strong>written_img</strong> (<em>numpy.ndarray</em>) – サイズ変更される画像.</p></li>
-<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+<li><p><strong>bg_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -432,18 +493,18 @@
 
 <dl class="function">
 <dt id="src.util.expand_imgs">
-<code class="descclassname">src.util.</code><code class="descname">expand_imgs</code><span class="sig-paren">(</span><em>base_img, pair_img, background_color=[0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_imgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_imgs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.util.</code><code class="descname">expand_imgs</code><span class="sig-paren">(</span><em>base_img, pair_img, bg_color=[0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_imgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_imgs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="src.util.expand_power2">
-<code class="descclassname">src.util.</code><code class="descname">expand_power2</code><span class="sig-paren">(</span><em>img</em>, <em>background_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_power2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_power2" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.util.</code><code class="descname">expand_power2</code><span class="sig-paren">(</span><em>img</em>, <em>bg_color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#expand_power2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.expand_power2" title="Permalink to this definition">¶</a></dt>
 <dd><p>正方形画像の辺が2の累乗になるように画素を追加して拡張する.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>numpy.ndarray</em>) – 拡張したい画像.</p></li>
-<li><p><strong>background_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
+<li><p><strong>bg_color</strong> (<em>tuple</em>) – 追加する画素の背景色。指定がなければ白.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -491,7 +552,7 @@
 
 <dl class="function">
 <dt id="src.util.modify_path_in_config">
-<code class="descclassname">src.util.</code><code class="descname">modify_path_in_config</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#modify_path_in_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.modify_path_in_config" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">src.util.</code><code class="descname">modify_path_in_config</code><span class="sig-paren">(</span><em>config, conf_type_has_path=['input', 'output']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#modify_path_in_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.modify_path_in_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>configのパスをOSに合わせて変更する.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -549,6 +610,21 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.util.uniform_img_size">
+<code class="descclassname">src.util.</code><code class="descname">uniform_img_size</code><span class="sig-paren">(</span><em>input_dir</em>, <em>output_dir='uniform_size'</em>, <em>save_size=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/util.html#uniform_img_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#src.util.uniform_img_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>指定されたディレクトリ配下の画像サイズを統一して出力する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dir</strong> (<em>str</em>) – 画像が格納されたディレクトリ(テキスト等は除いてください).階層格納可.</p></li>
+<li><p><strong>input_dir</strong> – 画像サイズを統一したディレクトリ.</p></li>
+<li><p><strong>save_size</strong> (<em>bool</em>) – 統一前後の画像サイズをテキストで出力するか否か.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
