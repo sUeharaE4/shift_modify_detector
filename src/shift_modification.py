@@ -164,11 +164,11 @@ def shift_modify(base_img, pair_img):
     base_img : numpy.ndarray
         テンプレート画像
     pair_img : numpy.ndarray
-        テンプレート画像
+        修正対象画像
 
     Returns
     -------
-    modified_img : numpy.ndarray
+    modify_img : numpy.ndarray
         水平垂直方向のズレを修正した画像.
     """
     height, width = pair_img.shape
@@ -183,6 +183,88 @@ def shift_modify(base_img, pair_img):
     modify_img = util.exchange_black_white(modify_img)
 
     return modify_img
+
+
+def create_diff_img(base_path, pair_path, diff_path, modified_img, threshold_bw):
+    """
+    テンプレート画像、修正対象画像、修正済み画像を並べて比較する.
+
+    Parameters
+    ----------
+    base_path : str
+        テンプレート画像のパス
+    pair_path : str
+        修正対象画像のパス
+    diff_path : str
+        比較画像の出力先パス
+    modified_img : numpy.ndarray
+        水平垂直方向のズレを修正した画像.
+    threshold_bw : int
+        白黒の2値化しきい値
+    """
+    global logger
+    # 一度形式を変更してしまった画像をもとに戻す
+    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    base_img = util.exchange_black_white(base_img)
+    pair_img = util.exchange_black_white(pair_img)
+    modified_img = np.asarray(modified_img, dtype=np.uint8)
+    logger.debug('hconcat 3 imgs : ' +
+                 str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
+                 extra=extra_args)
+    show_img = cv2.hconcat([base_img, pair_img, modified_img])
+    # カラー読み込み用
+    tmp_save_path = 'tmp.' + diff_path.split('.')[-1]
+    cv2.imwrite(tmp_save_path, show_img)
+    show_img = cv2.imread(tmp_save_path)
+    os.remove(tmp_save_path)
+    # 罫線追加
+    show_img = util.write_ruled_line(show_img)
+    scale = base_img.shape[1] / show_img.shape[1]
+    show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
+    cv2.imwrite(diff_path, show_img)
+
+
+def shift_modify_img(base_path, pair_path, threshold_bw, resize_shape, mag_scale):
+    """
+    テンプレート画像と比較して、画像のズレを修正する.
+
+    Parameters
+    ----------
+    base_path : str
+        テンプレート画像のパス
+    pair_path : str
+        修正対象画像のパス
+    threshold_bw : int
+        白黒の2値化しきい値
+    resize_shape : tuple
+        画像を高速フーリエ変換する際にサイズが2の累乗でないと計算効率が悪いため
+        リサイズが必要.その際のサイズ.(512, 512)等.
+    mag_scale : int
+        RIPOCする際のmagnitude_scale.
+
+    Returns
+    -------
+    modified_img : numpy.ndarray
+        ズレを修正した画像.
+    """
+    global logger
+    base_img, pair_img = util.read_base_pair_imgs(base_path, pair_path, threshold_bw)
+    default_height, default_width = base_img.shape[0:2]
+    logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
+
+    expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
+    expand_base_img = util.img2float64(expand_base_img)
+    expand_pair_img = util.img2float64(expand_pair_img)
+    logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
+
+    # 回転方向の修正
+    rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
+                                           resize_shape, mag_scale)
+    # 回転修正したのでPOC
+    modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
+    modified_img = modified_img[0:default_height, 0:default_width]
+
+    return modified_img
 
 
 def main():
@@ -217,30 +299,16 @@ def main():
         os.mkdir(OUTPUT_DIR)
 
     if MODIFY_MULTI:
-        pair_img_list = os.listdir(MODIFY_DIR)
-        pair_img_list = list(set(pair_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
-        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_list]
+        tmp_img_list = os.listdir(MODIFY_DIR)
+        pair_img_name_list = list(set(tmp_img_list) - set([BASE_IMG.split(DIR_SEP)[-1]]))
+        pair_img_list = [os.path.join(MODIFY_DIR, img) for img in pair_img_name_list]
     else:
         pair_img_list = [PAIR_PATH]
     logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
 
     for pair_img_path in tqdm(pair_img_list):
         logger.debug('target_img : ' + pair_img_path, extra=extra_args)
-        base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
-        default_height, default_width = base_img.shape[0:2]
-        logger.debug('default_size : ' + str(base_img.shape[0:2]), extra=extra_args)
-
-        expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
-        expand_base_img = util.img2float64(expand_base_img)
-        expand_pair_img = util.img2float64(expand_pair_img)
-        logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]), extra=extra_args)
-
-        # 回転方向の修正
-        rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
-                                               RESIZE_SHAPE, MAG_SCALE)
-        # 回転修正したのでPOC
-        modified_img = shift_modify(expand_base_img, rotate_expand_pair_img)
-        modified_img = modified_img[0:default_height, 0:default_width]
+        modified_img = shift_modify_img(BASE_IMG, pair_img_path, THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
         logger.debug('modified_size : ' + str(modified_img.shape[0:2]), extra=extra_args)
 
         output_img_name, output_img_ext = pair_img_path.split(DIR_SEP)[-1].split('.')
@@ -253,23 +321,8 @@ def main():
             diff_dir = os.path.join(OUTPUT_DIR, 'diff')
             if not os.path.exists(diff_dir):
                 os.mkdir(diff_dir)
-            # 一度形式を変更してしまった画像をもとに戻す
-            base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path, THRETHOLD_BW)
-            base_img, pair_img = util.exchange_black_white(base_img), util.exchange_black_white(pair_img)
-            modified_img = np.asarray(modified_img, dtype=np.uint8)
-            logger.debug('hconcat 3 imgs : ' +
-                         str(base_img.shape) + ' ' + str(base_img.shape) + ' ' + str(modified_img.shape),
-                         extra=extra_args)
-            show_img = cv2.hconcat([base_img, pair_img, modified_img])
-            # カラー読み込み用
-            cv2.imwrite('tmp' + output_img_ext, show_img)
-            show_img = cv2.imread('tmp' + output_img_ext)
-            os.remove('tmp' + output_img_ext)
-            # 罫線追加
-            show_img = util.write_ruled_line(show_img)
-            scale = base_img.shape[1] / show_img.shape[1]
-            show_img = cv2.resize(show_img, dsize=None, fx=scale, fy=scale)
-            cv2.imwrite(os.path.join(diff_dir, output_img_name + output_img_ext), show_img)
+            diff_path = os.path.join(diff_dir, output_img_name + output_img_ext)
+            create_diff_img(BASE_IMG, pair_img_path, diff_path, modified_img, THRETHOLD_BW)
     logger.debug('your inputs : ' + str(config), extra=extra_args)
 
 
