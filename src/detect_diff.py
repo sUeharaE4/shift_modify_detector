@@ -112,6 +112,11 @@ def check_config(config):
     return True
 
 
+def __debug(message, extra=extra_args):
+    global logger
+    logger.debug(message, extra=extra)
+
+
 def main():
     global logger
     # 入力チェック(型までは見ない)
@@ -159,10 +164,10 @@ def main():
             [os.path.join(DETECT_DIR, img) for img in pair_img_list]
     else:
         pair_img_list = [PAIR_PATH]
-    logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
+    __debug('pair_img_list : ' + str(pair_img_list))
 
     for pair_img_path in tqdm(pair_img_list):
-        logger.debug('target_img : ' + pair_img_path, extra=extra_args)
+        __debug('target_img : ' + pair_img_path)
         base_img, pair_img = util.read_base_pair_imgs(BASE_IMG, pair_img_path,
                                                       THRETHOLD_BW)
         # 画素の差分をでマスク画像を生成
@@ -193,7 +198,7 @@ def main():
         # csvの書き込み
         output_file_name = pair_img_path.split(DIR_SEP)[-1].split('.')[0]
         output_file_path = os.path.join(OUTPUT_DIR, output_file_name + '.csv')
-        logger.debug('output_file_path : ' + output_file_path,
+        __debug('output_file_path : ' + output_file_path,
                      extra=extra_args)
         with open(output_file_path, 'w') as f:
             writer = csv.writer(f, lineterminator='\n')
@@ -212,7 +217,7 @@ def main():
                 x, y, w, h = cv2.boundingRect(cnt)
                 cv2.rectangle(pair_img, (x, y), (x + w, y + h), (0, 255, 0), 5)
             cv2.imwrite(output_img_path, pair_img)
-    logger.debug('your inputs : ' + str(config), extra=extra_args)
+    __debug('your inputs : ' + str(config))
 
 
 if __name__ == '__main__':

@@ -126,8 +126,7 @@ def rotate_modify(base_img, pair_img, resize_shape=(512, 512), mag_scale=100):
     row, col = resize_base_img.shape[0:2]
     hrow = int(row/2)
     center = tuple(np.array(resize_base_img.shape) / 2)
-    logger.debug('resize_size : ' + str(resize_base_img.shape[0:2]),
-                 extra=extra_args)
+    __debug('resize_size : ' + str(resize_base_img.shape[0:2]))
 
     # 対数極座標変換と回転・拡大の推定
     base_log_poler, pair_log_poler = ripoc.logpolar_module(resize_base_img,
@@ -160,9 +159,9 @@ def rotate_modify(base_img, pair_img, resize_shape=(512, 512), mag_scale=100):
     row_shift, col_shift, _, g_coreg = ripoc.fft_coreg_trans(resize_base_img,
                                                              g_coreg)
     # check estimates
-    logger.debug('RIPOC Results', extra=extra_args)
-    logger.debug('rotate angle : ' + str(angle_est), extra=extra_args)
-    logger.debug('scale : '        + str(scale_est), extra=extra_args)
+    __debug('RIPOC Results')
+    __debug('rotate angle : ' + str(angle_est))
+    __debug('scale : ' + str(scale_est))
 
     tmp_height, tmp_width = pair_img.shape
     center = (tmp_width / 2, tmp_height / 2)
@@ -191,9 +190,9 @@ def shift_modify(base_img, pair_img):
     height, width = pair_img.shape
     shift, _ = cv2.phaseCorrelate(base_img, pair_img)
     x_shift, y_shift = shift
-    logger.debug('POC Results', extra=extra_args)
-    logger.debug('x_shift : ' + str(x_shift), extra=extra_args)
-    logger.debug('y_shift : ' + str(y_shift), extra=extra_args)
+    __debug('POC Results')
+    __debug('x_shift : ' + str(x_shift))
+    __debug('y_shift : ' + str(y_shift))
 
     trans = np.float32([[1, 0, -1 * x_shift], [0, 1, -1 * y_shift]])
     modify_img = cv2.warpAffine(pair_img, trans, (width, height))
@@ -220,7 +219,6 @@ def create_diff_img(base_path, pair_path, diff_path,
     threshold_bw : int
         白黒の2値化しきい値
     """
-    global logger
     # 一度形式を変更してしまった画像をもとに戻す
     base_img, pair_img = util.read_base_pair_imgs(base_path,
                                                   pair_path,
@@ -228,7 +226,7 @@ def create_diff_img(base_path, pair_path, diff_path,
     base_img = util.exchange_black_white(base_img)
     pair_img = util.exchange_black_white(pair_img)
     modified_img = np.asarray(modified_img, dtype=np.uint8)
-    logger.debug('hconcat 3 imgs : ' + str(base_img.shape) + ' ' \
+    __debug('hconcat 3 imgs : ' + str(base_img.shape) + ' ' \
                  + str(base_img.shape) + ' ' + str(modified_img.shape),
                  extra=extra_args)
     show_img = cv2.hconcat([base_img, pair_img, modified_img])
@@ -268,19 +266,16 @@ def shift_modify_img(base_path, pair_path,
     modified_img : numpy.ndarray
         ズレを修正した画像.
     """
-    global logger
     base_img, pair_img = util.read_base_pair_imgs(base_path,
                                                   pair_path,
                                                   threshold_bw)
     default_height, default_width = base_img.shape[0:2]
-    logger.debug('default_size : ' + str(base_img.shape[0:2]),
-                 extra=extra_args)
+    __debug('default_size : ' + str(base_img.shape[0:2]))
 
     expand_base_img, expand_pair_img = util.expand_imgs(base_img, pair_img)
     expand_base_img = util.img2float64(expand_base_img)
     expand_pair_img = util.img2float64(expand_pair_img)
-    logger.debug('expand_size : ' + str(expand_base_img.shape[0:2]),
-                 extra=extra_args)
+    __debug('expand_size : ' + str(expand_base_img.shape[0:2]))
 
     # 回転方向の修正
     rotate_expand_pair_img = rotate_modify(expand_base_img, expand_pair_img,
@@ -290,6 +285,11 @@ def shift_modify_img(base_path, pair_path,
     modified_img = modified_img[0:default_height, 0:default_width]
 
     return modified_img
+
+
+def __debug(message, extra=extra_args):
+    global logger
+    logger.debug(message, extra=extra)
 
 
 def main():
@@ -331,21 +331,20 @@ def main():
             [os.path.join(MODIFY_DIR, img) for img in pair_img_name_list]
     else:
         pair_img_list = [PAIR_PATH]
-    logger.debug('pair_img_list : ' + str(pair_img_list), extra=extra_args)
+    __debug('pair_img_list : ' + str(pair_img_list))
 
     for pair_img_path in tqdm(pair_img_list):
-        logger.debug('target_img : ' + pair_img_path, extra=extra_args)
+        __debug('target_img : ' + pair_img_path)
         modified_img = shift_modify_img(BASE_IMG, pair_img_path,
                                         THRETHOLD_BW, RESIZE_SHAPE, MAG_SCALE)
-        logger.debug('modified_size : ' + str(modified_img.shape[0:2]),
-                     extra=extra_args)
+        __debug('modified_size : ' + str(modified_img.shape[0:2]))
 
         output_img_name, output_img_ext = \
             pair_img_path.split(DIR_SEP)[-1].split('.')
         output_img_ext = '.' + output_img_ext
         output_img_path = os.path.join(OUTPUT_DIR,
                                        output_img_name + output_img_ext)
-        logger.debug('output_path : ' + output_img_path, extra=extra_args)
+        __debug('output_path : ' + output_img_path)
         cv2.imwrite(output_img_path, modified_img)
 
         if CREATE_DIFF:
@@ -356,7 +355,7 @@ def main():
                                      output_img_name + output_img_ext)
             create_diff_img(BASE_IMG, pair_img_path, diff_path,
                             modified_img, THRETHOLD_BW)
-    logger.debug('your inputs : ' + str(config), extra=extra_args)
+    __debug('your inputs : ' + str(config))
 
 
 if __name__ == '__main__':
