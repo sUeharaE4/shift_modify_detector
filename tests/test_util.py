@@ -32,7 +32,7 @@ def test_expand2square_no_backcolor():
     ((100, 90, 3), None),
     ((128, 128, 3), [0, 0, 0]),
 ])
-def test_expand_power2(img_shape):
+def test_expand_power2(img_shape, bg_color):
     img = np.zeros(img_shape, dtype=np.int8)
     expand_img = util.expand_power2(img, bg_color)
     expect_img = np.zeros((128, 128, 3), dtype=np.int8)
