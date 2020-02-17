@@ -34,7 +34,7 @@ def test_expand2square_no_backcolor():
 ])
 def test_expand_power2(img_shape):
     img = np.zeros(img_shape, dtype=np.int8)
-    expand_img = util.expand_power2(img)
+    expand_img = util.expand_power2(img, bg_color)
     expect_img = np.zeros((128, 128, 3), dtype=np.int8)
     assert (expand_img == expect_img).all()
 
