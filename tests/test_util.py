@@ -43,7 +43,7 @@ def test_expand_power2(img_shape, bg_color_base):
     assert (expand_img == expect_img).all()
 
 
-@pytest.mark.parametrize('img_shape, pair_shape, bg_color_base', [
+@pytest.mark.parametrize('base_shape, pair_shape, bg_color_base', [
     ((90, 90, 3), (100, 100, 3), None),
     ((100, 100, 3), (90, 90, 3), 0),
     ((100, 100, 3), (100, 100, 3), 0),
