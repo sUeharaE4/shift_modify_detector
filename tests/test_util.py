@@ -28,14 +28,18 @@ def test_expand2square_no_backcolor():
     assert (expand_img == expect_img).all()
 
 
-@pytest.mark.parametrize('img_shape, bg_color', [
+@pytest.mark.parametrize('img_shape, bg_color_base', [
     ((100, 90, 3), None),
-    ((128, 128, 3), [0, 0, 0]),
+    ((128, 128, 3), 0),
 ])
-def test_expand_power2(img_shape, bg_color):
-    img = np.zeros(img_shape, dtype=np.int8)
+def test_expand_power2(img_shape, bg_color_base):
+    if bg_color_base is None:
+        bg_color = [255, 255, 255]
+    else:
+        bg_color = [bg_color_base, bg_color_base, bg_color_base]
+    img = np.ones(img_shape, dtype=np.int8)
     expand_img = util.expand_power2(img, bg_color)
-    expect_img = np.zeros((128, 128, 3), dtype=np.int8)
+    expect_img = np.ones((128, 128, 3), dtype=np.int8) * bg_color_base
     assert (expand_img == expect_img).all()
 
 
