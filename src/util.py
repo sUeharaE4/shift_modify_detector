@@ -420,7 +420,7 @@ def uniform_img_size(input_dir, output_dir='uniform_size', save_size=False):
     ----------
     input_dir : str
         画像が格納されたディレクトリ(テキスト等は除いてください).階層格納可.
-    input_dir : str
+    output_dir : str
         画像サイズを統一したディレクトリ.
     save_size : bool
         統一前後の画像サイズをテキストで出力するか否か.
