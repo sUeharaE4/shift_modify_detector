@@ -34,9 +34,8 @@ def test_expand2square_no_backcolor():
 ])
 def test_expand_power2(img_shape, bg_color_base):
     if bg_color_base is None:
-        bg_color = [255, 255, 255]
-    else:
-        bg_color = [bg_color_base, bg_color_base, bg_color_base]
+        bg_color_base = 255
+    bg_color = [bg_color_base, bg_color_base, bg_color_base]
     img = np.ones(img_shape, dtype=np.int8) * bg_color_base
     expand_img = util.expand_power2(img, bg_color)
     expect_img = np.ones((128, 128, 3), dtype=np.int8) * bg_color_base
@@ -50,9 +49,8 @@ def test_expand_power2(img_shape, bg_color_base):
 ])
 def test_expand_cut2base_size(base_shape, pair_shape, bg_color_base):
     if bg_color_base is None:
-        bg_color = [255, 255, 255]
-    else:
-        bg_color = [bg_color_base, bg_color_base, bg_color_base]
+        bg_color_base = 255
+    bg_color = [bg_color_base, bg_color_base, bg_color_base]
     base_img = np.ones(base_shape, dtype=np.int8) * bg_color_base
     pair_img = np.ones(pair_shape, dtype=np.int8) * bg_color_base
     modified_img = util.expand_cut2base_size(base_img, pair_img, bg_color)
