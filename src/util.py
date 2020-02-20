@@ -97,10 +97,12 @@ def expand_cut2base_size(base_img, written_img, bg_color=None):
     def modify_img(img, diff_width, diff_height, bg_color):
         height, width = img.shape[:2]
         modify_img = img.copy()
+        # if base_img is smaller, cut image by size of diff
         if diff_width < 0:
-            modify_img = modify_img[:, :width - diff_width]
+            modify_img = modify_img[:, :width + diff_width]
         if diff_height < 0:
-            modify_img = modify_img[:height - diff_height, :]
+            modify_img = modify_img[:height + diff_height, :]
+        # if base_size is larger, expand pair_img by size of diff
         if diff_width > 0:
             modify_img = cv2.copyMakeBorder(modify_img, 0, 0, 0, diff_width,
                                             cv2.BORDER_CONSTANT,
