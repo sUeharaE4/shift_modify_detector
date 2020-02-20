@@ -21,11 +21,46 @@ DIR_SEP = os.sep
 def test_expand2square_no_backcolor():
     img = np.asarray([[0, 0, 0],
                       [0, 0, 0]])
-    assert (util.expand2square(img) == \
-            np.asarray([[0, 0, 0],
-                        [0, 0, 0],
-                        [255, 255, 255]])
-           ).all()
+    expand_img = util.expand2square(img)
+    expect_img = np.asarray([[0, 0, 0],
+                             [0, 0, 0],
+                             [255, 255, 255]])
+    assert (expand_img == expect_img).all()
+
+
+@pytest.mark.parametrize('img_shape, bg_color_base', [
+    ((100, 90, 3), None),
+    ((128, 128, 3), 0),
+])
+def test_expand_power2(img_shape, bg_color_base):
+    if bg_color_base is None:
+        bg_color = None
+        expect_color_base = 255
+    else:
+        bg_color = [bg_color_base, bg_color_base, bg_color_base]
+        expect_color_base = bg_color_base
+    img = np.ones(img_shape, dtype=np.int8) * expect_color_base
+    expand_img = util.expand_power2(img, bg_color)
+    expect_img = np.ones((128, 128, 3), dtype=np.int8) * expect_color_base
+    assert (expand_img == expect_img).all()
+
+
+@pytest.mark.parametrize('base_shape, pair_shape, bg_color_base', [
+    ((90, 90, 3), (100, 100, 3), None),
+    ((100, 100, 3), (90, 90, 3), 0),
+    ((100, 100, 3), (100, 100, 3), 0),
+])
+def test_expand_cut2base_size(base_shape, pair_shape, bg_color_base):
+    if bg_color_base is None:
+        bg_color = None
+        expect_color_base = 255
+    else:
+        bg_color = [bg_color_base, bg_color_base, bg_color_base]
+        expect_color_base = bg_color_base
+    base_img = np.ones(base_shape, dtype=np.int8) * expect_color_base
+    pair_img = np.ones(pair_shape, dtype=np.int8) * expect_color_base
+    modified_img = util.expand_cut2base_size(base_img, pair_img, bg_color)
+    assert base_img.shape == modified_img.shape
 
 
 @pytest.mark.parametrize('conf_path', [
